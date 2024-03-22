@@ -31,11 +31,9 @@ public partial class FundRaisingDbContext : DbContext
     {
         modelBuilder.Entity<Password>(entity =>
         {
-            entity.HasKey(e => e.PasswordId).HasName("PK__Password__850E247AA2D12F65");
+            entity.HasKey(e => e.PasswordId).HasName("PK__Password__850E247ABB43354C");
 
-            entity.Property(e => e.PasswordId)
-                .ValueGeneratedNever()
-                .HasColumnName("Password_ID");
+            entity.Property(e => e.PasswordId).HasColumnName("Password_ID");
             entity.Property(e => e.HashKey)
                 .HasMaxLength(500)
                 .IsUnicode(false)
@@ -48,18 +46,16 @@ public partial class FundRaisingDbContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.Passwords)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__Passwords__User___3F466844");
+                .HasConstraintName("FK__Passwords__User___5165187F");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__Users__206D919011D36843");
+            entity.HasKey(e => e.UserId).HasName("PK__Users__206D9190DE5E73EB");
 
-            entity.HasIndex(e => e.Email, "UQ__Users__A9D105343B6BD948").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Users__A9D10534A1CD5705").IsUnique();
 
-            entity.Property(e => e.UserId)
-                .ValueGeneratedNever()
-                .HasColumnName("User_ID");
+            entity.Property(e => e.UserId).HasColumnName("User_ID");
             entity.Property(e => e.Email)
                 .HasMaxLength(150)
                 .IsUnicode(false);
@@ -75,13 +71,11 @@ public partial class FundRaisingDbContext : DbContext
 
         modelBuilder.Entity<UserAuthLog>(entity =>
         {
-            entity.HasKey(e => e.LogId).HasName("PK__User_Aut__2D26E7AEDD5875A6");
+            entity.HasKey(e => e.LogId).HasName("PK__User_Aut__2D26E7AE0A99153A");
 
             entity.ToTable("User_Auth_Log");
 
-            entity.Property(e => e.LogId)
-                .ValueGeneratedNever()
-                .HasColumnName("Log_ID");
+            entity.Property(e => e.LogId).HasColumnName("Log_ID");
             entity.Property(e => e.EventTimestamp)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
@@ -94,18 +88,16 @@ public partial class FundRaisingDbContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.UserAuthLogs)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__User_Auth__User___46E78A0C");
+                .HasConstraintName("FK__User_Auth__User___5629CD9C");
         });
 
         modelBuilder.Entity<UserType>(entity =>
         {
-            entity.HasKey(e => e.UserTypeId).HasName("PK__User_Typ__D3A592DCC20AA658");
+            entity.HasKey(e => e.UserTypeId).HasName("PK__User_Typ__D3A592DC22127C26");
 
             entity.ToTable("User_Type");
 
-            entity.Property(e => e.UserTypeId)
-                .ValueGeneratedNever()
-                .HasColumnName("User_Type_ID");
+            entity.Property(e => e.UserTypeId).HasColumnName("User_Type_ID");
             entity.Property(e => e.Type)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -113,7 +105,7 @@ public partial class FundRaisingDbContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.UserTypes)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__User_Type__User___4BAC3F29");
+                .HasConstraintName("FK__User_Type__User___59063A47");
         });
 
         OnModelCreatingPartial(modelBuilder);

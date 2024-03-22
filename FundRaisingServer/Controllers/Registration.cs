@@ -1,6 +1,9 @@
 using System.Runtime.CompilerServices;
+using System.Text;
 using FundRaisingServer.Models;
 using FundRaisingServer.Models.DTOs.UserAuth;
+using FundRaisingServer.Services.PasswordHashing;
+using Konscious.Security.Cryptography;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,9 +12,10 @@ namespace FundRaisingServer.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class Registration(FundRaisingDbContext context): ControllerBase
+public class Registration(FundRaisingDbContext context, IArgon2Hasher argon2Hasher): ControllerBase
 {
-    private FundRaisingDbContext _context = context;
+    private readonly FundRaisingDbContext _context = context;
+    private readonly IArgon2Hasher _argon2Hasher = argon2Hasher;
     
     [HttpPost]
     public async Task<IActionResult> Register([FromBody] RegistrationRequestDto registrationRequestDto)
@@ -35,7 +39,21 @@ public class Registration(FundRaisingDbContext context): ControllerBase
             return BadRequest("Email Already Exists");
         }
         // Hashing the password
-        return Ok("Registered");
+        byte[] password = Encoding.UTF8.GetBytes(registrationRequestDto.Password);
+        byte[] salt = Encoding.UTF8.GetBytes(RandomSaltGenerator.GenerateSalt(512 / 8));
+        var hashedPassword = this._argon2Hasher.HashPassword(password: password, salt: salt);
+        Console.WriteLine("PASSWORD HASHED: " + hashedPassword);
+
+        registrationRequestDto.Password = hashedPassword;
+        var result = await this._context.Users.AddAsync(new User()
+        {
+            FirstName = registrationRequestDto.FirstName,
+            LastName = registrationRequestDto.LastName,
+            Email=registrationRequestDto.Email,
+        });
+
+        await this._context.SaveChangesAsync();
+        return Ok("Returning the id" + result.Entity.UserId);
     }
 
     private async Task<User> GetUserByEmail( string email )
