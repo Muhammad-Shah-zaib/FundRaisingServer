@@ -1,6 +1,7 @@
-using FundRaisingServer.Models;
+global using FundRaisingServer.Models;
+using FundRaisingServer.Repositories;
+using FundRaisingServer.Services;
 using FundRaisingServer.Services.PasswordHashing;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,7 +12,11 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 // Add services to the container.
 
 builder.Services.AddControllers();
+
 builder.Services.AddScoped<IArgon2Hasher, Argon2Hasher>();
+builder.Services.AddScoped<IUserRepository, UserService>();
+builder.Services.AddScoped<IPasswordRepository, PasswordService>();
+
 // adding the db context
 builder.Services.AddDbContext<FundRaisingDbContext>(options => 
     options

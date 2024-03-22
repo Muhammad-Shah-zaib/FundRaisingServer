@@ -3,13 +3,13 @@ using Konscious.Security.Cryptography;
 
 public class Argon2Hasher: IArgon2Hasher
 {
-    public string HashPassword(byte[] password, byte[] salt)
+    public byte[] HashPassword(byte[] password, byte[] salt)
     {
         try
         {
             // getting the hash
             var hash = Hash(password, salt);
-            return Convert.ToBase64String(hash);
+            return hash;
         }
         catch (Exception e)
         {
