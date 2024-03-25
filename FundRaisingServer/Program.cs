@@ -16,6 +16,7 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<IArgon2Hasher, Argon2Hasher>();
 builder.Services.AddScoped<IUserRepository, UserService>();
 builder.Services.AddScoped<IPasswordRepository, PasswordService>();
+builder.Services.AddScoped<IUserAuthLogRepository, UserAuthLogService>();
 
 // adding the db context
 builder.Services.AddDbContext<FundRaisingDbContext>(options => 

@@ -6,10 +6,11 @@ namespace FundRaisingServer.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class Registration(FundRaisingDbContext context, IUserRepository userRepo, IPasswordRepository passwordRepo): ControllerBase
+public class Registration(FundRaisingDbContext context, IUserRepository userRepo, IPasswordRepository passwordRepo, IUserAuthLogRepository userAuthLogRepo): ControllerBase
 {
     private readonly IUserRepository _userRepo = userRepo;
     private readonly IPasswordRepository _passwordRepo = passwordRepo;
+    private readonly IUserAuthLogRepository _userAuthLogRepo = userAuthLogRepo;
     
     [HttpPost]
     public async Task<IActionResult> Register([FromBody] RegistrationRequestDto registrationRequestDto)
@@ -46,6 +47,13 @@ public class Registration(FundRaisingDbContext context, IUserRepository userRepo
                 return StatusCode(500, "Failed to save User Password");
             }
 
+
+            if (!(await this._userAuthLogRepo.SaveUserAuthLogAsync(registrationRequestDto.Email,
+                    UserEventType.Registration)))
+            {
+                await this._userRepo.DeleteUserByEmailAsync(registrationRequestDto.Email);
+                return StatusCode(500, "Failed to save the User Log");
+            };
             return Ok("User Registered Successfully");
         }
         catch (Exception e)
@@ -53,7 +61,6 @@ public class Registration(FundRaisingDbContext context, IUserRepository userRepo
             Console.WriteLine(e);
             return StatusCode(500, "Something went Wrong");
         }
-        
-
     }
+    
 }
