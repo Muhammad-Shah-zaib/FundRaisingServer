@@ -4,7 +4,14 @@ namespace FundRaisingServer.Models.DTOs.UserAuth;
 
 public class RegistrationRequestDto
 {
-    public int UserId { get; set; } = 0;
+    /*
+     * User_Id is already set to AUTO_INCREMENT
+     * So no need to take the UserId from the user
+     * as it will automatically be handles by the
+     * MS SQL SERVER
+     */
+    
+    public int UserId { get; set; }
     [Required]
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;

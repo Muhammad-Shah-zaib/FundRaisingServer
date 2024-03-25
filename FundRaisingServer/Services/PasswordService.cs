@@ -52,4 +52,28 @@ public class PasswordService (FundRaisingDbContext context, IUserRepository user
             return false;
         }
     }
+
+    public async Task<bool> DeleteUserPasswordByEmailAsync(string email)
+    {
+        try
+        {
+            // get the user to get the id and then delete the user password from the table
+            var user = await this._userRepo.GetUserByEmailAsync(email);
+            if (user == null) return false;
+        
+            // deleting the user password from the table
+            var query = $"DELETE Passwords WHERE User_ID = {user.UserId}";
+
+            await this._context.Database.ExecuteSqlRawAsync(query);
+            await this._context.SaveChangesAsync();
+        
+            return true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return false;
+        }
+        
+    }
 }

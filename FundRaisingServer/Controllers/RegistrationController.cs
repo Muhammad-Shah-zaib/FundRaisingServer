@@ -6,31 +6,28 @@ namespace FundRaisingServer.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class Registration(FundRaisingDbContext context, IUserRepository userRepo, IPasswordRepository passwordRepo, IUserAuthLogRepository userAuthLogRepo): ControllerBase
+public class RegistrationController(FundRaisingDbContext context, IUserRepository userRepo, IPasswordRepository passwordRepo, IUserAuthLogRepository userAuthLogRepo): ControllerBase
 {
     private readonly IUserRepository _userRepo = userRepo;
     private readonly IPasswordRepository _passwordRepo = passwordRepo;
     private readonly IUserAuthLogRepository _userAuthLogRepo = userAuthLogRepo;
     
     [HttpPost]
-    public async Task<IActionResult> Register([FromBody] RegistrationRequestDto registrationRequestDto)
+    public async Task<ActionResult<RegistrationResponseDto>> Register([FromBody] RegistrationRequestDto registrationRequestDto)
     {
         try
         {
-            // checking if the model state is valid or not
-            if (!ModelState.IsValid)
-            {
-                if (registrationRequestDto.FirstName == string.Empty)
-                    return BadRequest("First Name is not provided");
-                if (registrationRequestDto.Email == string.Empty)
-                    return BadRequest("Email is not provided");
-                if (registrationRequestDto.Password == string.Empty)
-                    return BadRequest("Password is not provided");
-            }
+            /*
+             * Since the DataAnnotations are used so no need for
+             * manually checking for the *particular modelState* , Since it
+             * is already done by Framework
+             */
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            
 
             // checking if the Email already exists or not
             if ( (await this._userRepo.GetUserByEmailAsync(registrationRequestDto.Email)) != null )
-                return BadRequest("Email Already Exists");
+                return StatusCode(409, "Conflict: Email Already Exists");
         
             // saving User
             if (!(await this._userRepo.SaveUserAsync(registrationRequestDto)))
@@ -48,19 +45,31 @@ public class Registration(FundRaisingDbContext context, IUserRepository userRepo
             }
 
 
+            // Saving Logs
             if (!(await this._userAuthLogRepo.SaveUserAuthLogAsync(registrationRequestDto.Email,
                     UserEventType.Registration)))
             {
                 await this._userRepo.DeleteUserByEmailAsync(registrationRequestDto.Email);
-                return StatusCode(500, "Failed to save the User Log");
+                await this._passwordRepo.DeleteUserPasswordByEmailAsync(registrationRequestDto.Email);
+                return StatusCode(500, "Internal Server error please try again later");
             };
-            return Ok("User Registered Successfully");
+            
+            // Returning the response Dto
+            return Ok(new RegistrationResponseDto()
+            {
+                Success = true,
+                Email = registrationRequestDto.Email, // this will be replaced by JWT TOKEN
+                Message = "User has been Registered Successfully",
+                Errors = null
+            });
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
             return StatusCode(500, "Something went Wrong");
         }
+
+        
     }
     
 }
