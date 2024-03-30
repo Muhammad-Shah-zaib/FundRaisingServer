@@ -25,13 +25,13 @@ public partial class FundRaisingDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=.;Database=FundRaisingDb;Trusted_Connection=True;TrustServerCertificate=True");
+        => optionsBuilder.UseSqlServer("Server=tcp:fund-raising-server.database.windows.net,1433;Initial Catalog=FundRaisingDb;Persist Security Info=False;User ID=NustFundRaising;Password=Seecs@123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Password>(entity =>
         {
-            entity.HasKey(e => e.PasswordId).HasName("PK__Password__850E247ABB43354C");
+            entity.HasKey(e => e.PasswordId).HasName("PK__Password__850E247A37CBD892");
 
             entity.Property(e => e.PasswordId).HasColumnName("Password_ID");
             entity.Property(e => e.HashKey)
@@ -46,14 +46,14 @@ public partial class FundRaisingDbContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.Passwords)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__Passwords__User___5165187F");
+                .HasConstraintName("FK__Passwords__User___66603565");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__Users__206D9190DE5E73EB");
+            entity.HasKey(e => e.UserId).HasName("PK__Users__206D91903BFBC3E9");
 
-            entity.HasIndex(e => e.Email, "UQ__Users__A9D10534A1CD5705").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Users__A9D105345BEACED2").IsUnique();
 
             entity.Property(e => e.UserId).HasColumnName("User_ID");
             entity.Property(e => e.Email)
@@ -71,7 +71,7 @@ public partial class FundRaisingDbContext : DbContext
 
         modelBuilder.Entity<UserAuthLog>(entity =>
         {
-            entity.HasKey(e => e.LogId).HasName("PK__User_Aut__2D26E7AE0A99153A");
+            entity.HasKey(e => e.LogId).HasName("PK__User_Aut__2D26E7AE60A7A898");
 
             entity.ToTable("User_Auth_Log");
 
@@ -88,12 +88,12 @@ public partial class FundRaisingDbContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.UserAuthLogs)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__User_Auth__User___5629CD9C");
+                .HasConstraintName("FK__User_Auth__User___6C190EBB");
         });
 
         modelBuilder.Entity<UserType>(entity =>
         {
-            entity.HasKey(e => e.UserTypeId).HasName("PK__User_Typ__D3A592DC22127C26");
+            entity.HasKey(e => e.UserTypeId).HasName("PK__User_Typ__D3A592DC14136B60");
 
             entity.ToTable("User_Type");
 
@@ -105,7 +105,7 @@ public partial class FundRaisingDbContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.UserTypes)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__User_Type__User___59063A47");
+                .HasConstraintName("FK__User_Type__User___6383C8BA");
         });
 
         OnModelCreatingPartial(modelBuilder);

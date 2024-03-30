@@ -2,6 +2,7 @@ using System.Text;
 using FundRaisingServer.Models.DTOs.UserAuth;
 using FundRaisingServer.Repositories;
 using FundRaisingServer.Services.PasswordHashing;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace FundRaisingServer.Services;
@@ -88,5 +89,30 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
             return false;
         }
         
+    }
+    
+    
+    /*
+     * this method will check either
+     * the user is present in the db
+     * or not
+     */
+    public async Task<bool> CheckUserAsync(string email, string inputPassword)
+    {
+        // checking the user email
+        var userFromDb = await this.GetUserByEmailAsync(email);
+        if (userFromDb  == null) return false;
+        
+        // getting the passwords
+        var query = $"SELECT * FROM Passwords WHERE User_ID = {userFromDb.UserId}";
+        var userPassword = await this._context.Passwords.FromSqlRaw(query).FirstOrDefaultAsync();
+        
+        // checking the password
+        var result = this._argon2Hasher.VerifyHash(
+            Convert.FromBase64String(userPassword!.HashedPassword!),
+                Convert.FromBase64String(userPassword!.HashKey!),
+                Encoding.UTF8.GetBytes(inputPassword));
+
+        return result;
     }
 }

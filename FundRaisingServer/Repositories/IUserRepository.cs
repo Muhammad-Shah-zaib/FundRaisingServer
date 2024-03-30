@@ -16,4 +16,11 @@ public interface IUserRepository
     // this method will get the user by email from db
     Task<User?> GetUserByEmailAsync(string email);
 
+    /*
+     * This method will check Either
+     * the user is present in Db or not
+     * by using its email and password only
+     */
+    Task<bool> CheckUserAsync(string email, string password);
+
 }

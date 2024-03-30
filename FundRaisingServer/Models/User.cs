@@ -1,4 +1,7 @@
-﻿namespace FundRaisingServer.Models;
+﻿using System;
+using System.Collections.Generic;
+
+namespace FundRaisingServer.Models;
 
 public partial class User
 {

@@ -1,3 +1,6 @@
+using System.Security.Cryptography;
+using System.Text;
+
 namespace FundRaisingServer.Services.PasswordHashing;
 using Konscious.Security.Cryptography;
 
@@ -21,8 +24,18 @@ public class Argon2Hasher: IArgon2Hasher
 
     public bool VerifyHash(byte[] hashedPassword, byte[] salt, byte[] inputPassword)
     {
+        try
+        {
+            // lets first hash the input passwrod
+            var hash = Hash(password: inputPassword, salt: salt);
+            return CryptographicOperations.FixedTimeEquals(hash, hashedPassword);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return false;
+        }
         
-        throw new NotImplementedException();
     }
 
     private static byte[] Hash(byte[] password, byte[] salt)

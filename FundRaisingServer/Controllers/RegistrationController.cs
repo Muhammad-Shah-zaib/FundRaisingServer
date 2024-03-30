@@ -1,11 +1,13 @@
 using FundRaisingServer.Models.DTOs.UserAuth;
 using FundRaisingServer.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FundRaisingServer.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("Registration")]
 public class RegistrationController(FundRaisingDbContext context, IUserRepository userRepo, IPasswordRepository passwordRepo, IUserAuthLogRepository userAuthLogRepo): ControllerBase
 {
     private readonly IUserRepository _userRepo = userRepo;
@@ -70,6 +72,15 @@ public class RegistrationController(FundRaisingDbContext context, IUserRepositor
         }
 
         
+    }
+
+
+    [HttpGet]
+    [Route("Test")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> testing()
+    {
+        return Ok("I am working");
     }
     
 }
