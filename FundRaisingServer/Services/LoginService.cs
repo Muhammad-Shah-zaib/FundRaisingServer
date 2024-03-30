@@ -3,22 +3,20 @@ using FundRaisingServer.Repositories;
 
 namespace FundRaisingServer.Services;
 
-public class LoginService(FundRaisingDbContext context, JwtTokenService jwtTokenService, IUserRepository userRepo)
+public class LoginService(JwtTokenService jwtTokenService, IUserRepository userRepo): ILoginRepository
 {
-    private readonly FundRaisingDbContext _context = context;
     private readonly JwtTokenService _jwtTokenService = jwtTokenService;
     private readonly IUserRepository _userService = userRepo;
 
-    public async Task<LoginResponseDto?> LoginAsync(string email, string password)
+    // to know about the method below refer to its Interface
+    public async Task<LoginResponseDto?> LoginAsync(LoginRequestDto request)
     {
-        
-        
         try
         {
             // validating the user
-            if (! (await this._userService.CheckUserAsync(email, password)) ) return null;
+            if (! (await this._userService.CheckUserAsync(request.Email, request.Password)) ) return null;
 
-            var user = await this._userService.GetUserByEmailAsync(email);
+            var user = await this._userService.GetUserByEmailAsync(request.Email);
 
             if (user == null) return null;
             // generate JwtToken if we have the user
@@ -26,7 +24,7 @@ public class LoginService(FundRaisingDbContext context, JwtTokenService jwtToken
 
             var response = new LoginResponseDto()
             {
-                Email = email,
+                Email = request.Email,
                 Token = token,
                 Status = true
             };

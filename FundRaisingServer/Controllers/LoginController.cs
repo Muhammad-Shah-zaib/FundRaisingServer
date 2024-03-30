@@ -15,11 +15,20 @@ public class LoginController(LoginService loginService): ControllerBase
     [HttpPost]
     public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginRequestDto request)
     {
-        if (!ModelState.IsValid) return BadRequest("Please provide both Email and Password");
-        // checking for valid credentials
-        var result = await this._loginService.LoginAsync(email: request.Email, password: request.Password);
-        if (result == null) return BadRequest();
+        try
+        {
+            if (!ModelState.IsValid) return BadRequest("Please provide both Email and Password");
+            // checking for valid credentials
+            var result = await this._loginService.LoginAsync(request);
+            if (result == null) return BadRequest();
         
-        return Ok(result!);
+            return Ok(result!);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        
     }
 }

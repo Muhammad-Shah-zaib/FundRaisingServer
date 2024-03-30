@@ -3,12 +3,13 @@ using System.Security.Claims;
 using System.Text;
 using FundRaisingServer.Configurations;
 using FundRaisingServer.Models.DTOs.UserAuth;
+using FundRaisingServer.Repositories;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace FundRaisingServer.Services;
 
-public class JwtTokenService(IOptionsMonitor<JwtConfig> optionsMonitor)
+public class JwtTokenService(IOptionsMonitor<JwtConfig> optionsMonitor): IJwtTokenRepository
 {
     private readonly JwtConfig _jwtConfig = optionsMonitor.CurrentValue!;
 
