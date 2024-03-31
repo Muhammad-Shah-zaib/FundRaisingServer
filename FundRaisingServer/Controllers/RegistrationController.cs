@@ -1,5 +1,6 @@
 using FundRaisingServer.Models.DTOs.UserAuth;
 using FundRaisingServer.Repositories;
+using FundRaisingServer.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,11 +9,12 @@ namespace FundRaisingServer.Controllers;
 
 [ApiController]
 [Route("Registration")]
-public class RegistrationController(FundRaisingDbContext context, IUserRepository userRepo, IPasswordRepository passwordRepo, IUserAuthLogRepository userAuthLogRepo): ControllerBase
+public class RegistrationController(FundRaisingDbContext context,IUserTypeRepository userTypeService, IUserRepository userRepo, IPasswordRepository passwordRepo, IUserAuthLogRepository userAuthLogRepo): ControllerBase
 {
     private readonly IUserRepository _userRepo = userRepo;
     private readonly IPasswordRepository _passwordRepo = passwordRepo;
     private readonly IUserAuthLogRepository _userAuthLogRepo = userAuthLogRepo;
+    private readonly IUserTypeRepository _userTypeService = userTypeService;
     
     [HttpPost]
     public async Task<ActionResult<RegistrationResponseDto>> Register([FromBody] RegistrationRequestDto registrationRequestDto)
@@ -51,10 +53,22 @@ public class RegistrationController(FundRaisingDbContext context, IUserRepositor
             if (!(await this._userAuthLogRepo.SaveUserAuthLogAsync(registrationRequestDto.Email,
                     UserEventType.Registration)))
             {
-                await this._userRepo.DeleteUserByEmailAsync(registrationRequestDto.Email);
                 await this._passwordRepo.DeleteUserPasswordByEmailAsync(registrationRequestDto.Email);
+                await this._userRepo.DeleteUserByEmailAsync(registrationRequestDto.Email);
                 return StatusCode(500, "Internal Server error please try again later");
             };
+
+            // Saving user types
+            if (!await this._userTypeService.SaveUserTypeAsync(new UserTypeDto()
+                {
+                    UserType = registrationRequestDto.UserType,
+                    Email = registrationRequestDto.Email
+                }))
+            {
+                await this._passwordRepo.DeleteUserPasswordByEmailAsync(registrationRequestDto.Email);
+                await this._userRepo.DeleteUserByEmailAsync(registrationRequestDto.Email);
+                return StatusCode(500, "Failed so save user");
+            }
             
             // Returning the response Dto
             return Ok(new RegistrationResponseDto()
@@ -68,7 +82,7 @@ public class RegistrationController(FundRaisingDbContext context, IUserRepositor
         catch (Exception e)
         {
             Console.WriteLine(e);
-            return StatusCode(500, "Something went Wrong");
+            throw;
         }
 
         

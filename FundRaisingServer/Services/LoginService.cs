@@ -3,9 +3,9 @@ using FundRaisingServer.Repositories;
 
 namespace FundRaisingServer.Services;
 
-public class LoginService(JwtTokenService jwtTokenService, IUserRepository userRepo): ILoginRepository
+public class LoginService(IJwtTokenRepository jwtTokenService, IUserRepository userRepo): ILoginRepository
 {
-    private readonly JwtTokenService _jwtTokenService = jwtTokenService;
+    private readonly IJwtTokenRepository _jwtTokenService = jwtTokenService;
     private readonly IUserRepository _userService = userRepo;
 
     // to know about the method below refer to its Interface
@@ -14,7 +14,7 @@ public class LoginService(JwtTokenService jwtTokenService, IUserRepository userR
         try
         {
             // validating the user
-            if (! (await this._userService.CheckUserAsync(request.Email, request.Password)) ) return null;
+            if (! await this._userService.CheckUserAsync(request.Email, request.Password) ) return null;
 
             var user = await this._userService.GetUserByEmailAsync(request.Email);
 

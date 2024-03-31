@@ -1,4 +1,5 @@
 using FundRaisingServer.Models.DTOs.UserAuth;
+using FundRaisingServer.Repositories;
 using FundRaisingServer.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -7,10 +8,10 @@ namespace FundRaisingServer.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class LoginController(LoginService loginService): ControllerBase
+public class LoginController(ILoginRepository loginService): ControllerBase
 {
     //DIs
-    private readonly LoginService _loginService = loginService;
+    private readonly ILoginRepository _loginService = loginService;
 
     [HttpPost]
     public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginRequestDto request)

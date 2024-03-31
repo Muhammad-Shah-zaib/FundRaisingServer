@@ -14,6 +14,11 @@ public class JwtTokenService(IOptionsMonitor<JwtConfig> optionsMonitor): IJwtTok
     private readonly JwtConfig _jwtConfig = optionsMonitor.CurrentValue!;
 
 
+    /*
+     * The method below will generate the JSON WEB TOKEN (JWT)
+     * it uses the Secret key from jwt_config that is configure over
+     * JwtConfig present in appsettings.cs file
+     */
     public string GenerateJwtToken(User user)
     {
         var jwtTokenHandler = new JwtSecurityTokenHandler();

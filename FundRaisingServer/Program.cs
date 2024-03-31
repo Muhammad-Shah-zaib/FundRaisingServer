@@ -25,8 +25,9 @@ builder.Services.AddScoped<IArgon2Hasher, Argon2Hasher>();
 builder.Services.AddScoped<IUserRepository, UserService>();
 builder.Services.AddScoped<IPasswordRepository, PasswordService>();
 builder.Services.AddScoped<IUserAuthLogRepository, UserAuthLogService>();
-builder.Services.AddScoped<JwtTokenService>();
-builder.Services.AddScoped<LoginService>();
+builder.Services.AddScoped<IJwtTokenRepository, JwtTokenService>();
+builder.Services.AddScoped<ILoginRepository, LoginService>();
+builder.Services.AddScoped<IUserTypeRepository, UserTypeService>();
 
 // adding the db context
 builder.Services.AddDbContext<FundRaisingDbContext>(options => 
