@@ -37,9 +37,9 @@ builder.Services.AddDbContext<FundRaisingDbContext>(options =>
     );
 
 // adding cors for our cors
-builder.Services.AddCors(builder =>
+builder.Services.AddCors(options =>
 {
-    builder.AddDefaultPolicy(policy =>
+    options.AddDefaultPolicy(policy =>
     {
         policy.WithOrigins("http://localhost:5173")
             .AllowAnyHeader()
