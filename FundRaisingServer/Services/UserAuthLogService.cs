@@ -1,6 +1,7 @@
 using FundRaisingServer.Models.DTOs.UserAuth;
 using FundRaisingServer.Repositories;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace FundRaisingServer.Services;
@@ -32,9 +33,12 @@ public class UserAuthLogService (FundRaisingDbContext context, IUserRepository u
             
             
             // while saving the event_type since it is an enum so we need to convert its value into string
-            var query = $"INSERT INTO User_Auth_Log VALUES ('{userAuthLogDto.EventType.ToString()}', '{userAuthLogDto.EventTimestamp}', '{userAuthLogDto.UserId}') ";
+            var query = $"INSERT INTO User_Auth_Log VALUES (@EventType, @EventTimeStamp, @UserId) ";
 
-            await this._context.Database.ExecuteSqlRawAsync(query);
+            await this._context.Database.ExecuteSqlRawAsync(query,
+                new SqlParameter("@EventType", userAuthLogDto.EventType.ToString()),
+                new SqlParameter("@EventTimeStamp", userAuthLogDto.EventTimestamp),
+                new SqlParameter("@UserId", userAuthLogDto.UserId));
             await this._context.SaveChangesAsync();
             return true;
         }

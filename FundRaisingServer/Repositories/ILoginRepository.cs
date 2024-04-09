@@ -6,7 +6,7 @@ public interface ILoginRepository
 {
     /*
      * the method below will try logging
-     * the user in, if and only if the
+     * the user in, if and only if thef
      * credentials are correct to the
      * credentials present in the Db.
      *

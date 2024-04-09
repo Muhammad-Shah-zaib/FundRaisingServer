@@ -3,6 +3,8 @@ using FundRaisingServer.Models.DTOs.UserAuth;
 using FundRaisingServer.Repositories;
 using FundRaisingServer.Services.PasswordHashing;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace FundRaisingServer.Services;
@@ -69,8 +71,8 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
     public async Task<User?> GetUserByEmailAsync( string email )
     {
         // getting the user if exists
-        var query = $"Select * FROM Users Where Email = '{email}'";
-        var user = await this._context.Users.FromSqlRaw(query).FirstOrDefaultAsync();
+        var query = $"Select * FROM Users Where Email = @UserEmail";
+        var user = await this._context.Users.FromSqlRaw(query, new SqlParameter("@UserEmail", email)).FirstOrDefaultAsync();
         
         return user; // this return user or null
     }
@@ -104,8 +106,8 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
         if (userFromDb  == null) return false;
         
         // getting the passwords
-        var query = $"SELECT * FROM Passwords WHERE User_ID = {userFromDb.UserId}";
-        var userPassword = await this._context.Passwords.FromSqlRaw(query).FirstOrDefaultAsync();
+        var query = $"SELECT * FROM Passwords WHERE User_ID = @UserId";
+        var userPassword = await this._context.Passwords.FromSqlRaw(query, new SqlParameter("@UserId", userFromDb.UserId)).FirstOrDefaultAsync();
         
         // checking the password
         var result = this._argon2Hasher.VerifyHash(

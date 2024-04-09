@@ -2,6 +2,7 @@ using System.Text;
 using FundRaisingServer.Repositories;
 using FundRaisingServer.Services.PasswordHashing;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace FundRaisingServer.Services;
@@ -36,12 +37,11 @@ public class PasswordService (FundRaisingDbContext context, IUserRepository user
             var hashedPassword = this._argon2Hasher.HashPassword(password: password, salt: salt);
 
             // saving User Password
-            var query = @$"
-                        INSERT INTO dbo.Passwords
-                        VALUES 
-                             ('{Convert.ToBase64String(hashedPassword)}', '{Convert.ToBase64String(salt)}', {user.UserId});
-                        ";
-            await this._context.Database.ExecuteSqlRawAsync(query);
+            const string query = "INSERT INTO dbo.Passwords VALUES (@HashedPassword, @Salt, @UserId);";
+            await this._context.Database.ExecuteSqlRawAsync(query,
+                new SqlParameter("@HashedPassword", Convert.ToBase64String(hashedPassword)),
+                new SqlParameter("@Salt", Convert.ToBase64String(salt)),
+                new SqlParameter("@UserId", user.UserId));
             await this._context.SaveChangesAsync();
 
             return true;
@@ -62,9 +62,10 @@ public class PasswordService (FundRaisingDbContext context, IUserRepository user
             if (user == null) return false;
         
             // deleting the user password from the table
-            var query = $"DELETE Passwords WHERE User_ID = {user.UserId}";
+            const string query = $"DELETE Passwords WHERE User_ID = @UserId";
 
-            await this._context.Database.ExecuteSqlRawAsync(query);
+            await this._context.Database.ExecuteSqlRawAsync(query, 
+                new SqlParameter("@UserId", user.UserId));
             await this._context.SaveChangesAsync();
         
             return true;
