@@ -1,5 +1,6 @@
 using FundRaisingServer.Models.DTOs.UserAuth;
 using FundRaisingServer.Repositories;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace FundRaisingServer.Services;
@@ -25,8 +26,10 @@ public class UserTypeService(FundRaisingDbContext context, IUserRepository userR
             if (user == null) throw new Exception("No user find with the provided email");
             
             // saving the user
-            var query = $"INSERT INTO User_Type VALUES ('{userTypeDto.UserType}', '{user.UserId}')";
-            await this._context.Database.ExecuteSqlRawAsync(query);
+            const string query = $"INSERT INTO User_Type VALUES (@UserType, @UserId)";
+            await this._context.Database.ExecuteSqlRawAsync(query,
+                new SqlParameter("@UserType", userTypeDto.UserType),
+                new SqlParameter("@UserId", user.UserId));
             await this._context.SaveChangesAsync();
             return true;
         }

@@ -21,7 +21,7 @@ public class LoginController(ILoginRepository loginService): ControllerBase
             if (!ModelState.IsValid) return BadRequest("Please provide both Email and Password");
             // checking for valid credentials
             var result = await this._loginService.LoginAsync(request);
-            if (result == null) return BadRequest();
+            if (result == null) return Unauthorized("Invalid Email or Password");
         
             return Ok(result!);
         }
