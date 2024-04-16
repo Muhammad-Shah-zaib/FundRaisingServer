@@ -15,6 +15,10 @@ public partial class FundRaisingDbContext : DbContext
     {
     }
 
+    public virtual DbSet<Case> Cases { get; set; }
+
+    public virtual DbSet<Cause> Causes { get; set; }
+
     public virtual DbSet<Password> Passwords { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
@@ -24,11 +28,46 @@ public partial class FundRaisingDbContext : DbContext
     public virtual DbSet<UserType> UserTypes { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=tcp:fund-raising-server.database.windows.net,1433;Initial Catalog=FundRaisingDb;Persist Security Info=False;User ID=NustFundRaising;Password=Seecs@123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
+        => optionsBuilder.UseSqlServer("Name=Connectionstrings:FundRaisingDb");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Case>(entity =>
+        {
+            entity.HasKey(e => e.CaseId).HasName("PK__Cases__D062FC05A83F1357");
+
+            entity.Property(e => e.CaseId).HasColumnName("Case_ID");
+            entity.Property(e => e.CauseId).HasColumnName("CauseID");
+            entity.Property(e => e.CreatedDate).HasColumnName("Created_Date");
+            entity.Property(e => e.Description)
+                .HasMaxLength(560)
+                .IsUnicode(false);
+            entity.Property(e => e.Title)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+
+            entity.HasOne(d => d.Cause).WithMany(p => p.Cases)
+                .HasForeignKey(d => d.CauseId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Cases__CauseID__75A278F5");
+        });
+
+        modelBuilder.Entity<Cause>(entity =>
+        {
+            entity.HasKey(e => e.CauseId).HasName("PK__Causes__BC664993D950767B");
+
+            entity.Property(e => e.CauseId).HasColumnName("Cause_ID");
+            entity.Property(e => e.CreatedDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Description)
+                .HasMaxLength(560)
+                .IsUnicode(false);
+            entity.Property(e => e.Title)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+        });
+
         modelBuilder.Entity<Password>(entity =>
         {
             entity.HasKey(e => e.PasswordId).HasName("PK__Password__850E247A37CBD892");
