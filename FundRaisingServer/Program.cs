@@ -28,6 +28,7 @@ builder.Services.AddScoped<IUserAuthLogRepository, UserAuthLogService>();
 builder.Services.AddScoped<IJwtTokenRepository, JwtTokenService>();
 builder.Services.AddScoped<ILoginRepository, LoginService>();
 builder.Services.AddScoped<IUserTypeRepository, UserTypeService>();
+builder.Services.AddScoped<ICasesRepository, CasesService>();
 
 // adding the db context
 builder.Services.AddDbContext<FundRaisingDbContext>(options => 

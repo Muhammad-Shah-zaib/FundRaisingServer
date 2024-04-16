@@ -31,7 +31,7 @@ public class RegistrationController(FundRaisingDbContext context,IUserTypeReposi
 
             // checking if the Email already exists or not
             if ( (await this._userRepo.GetUserByEmailAsync(registrationRequestDto.Email)) != null )
-                return StatusCode(409, "Conflict: Email Already Exists");
+                return StatusCode(409, "Email Already Exists");
         
             // saving User
             if (!(await this._userRepo.SaveUserAsync(registrationRequestDto)))
@@ -67,6 +67,7 @@ public class RegistrationController(FundRaisingDbContext context,IUserTypeReposi
             {
                 await this._passwordRepo.DeleteUserPasswordByEmailAsync(registrationRequestDto.Email);
                 await this._userRepo.DeleteUserByEmailAsync(registrationRequestDto.Email);
+                // need to implement a method for deleting the logs
                 return StatusCode(500, "Failed so save user");
             }
             
@@ -74,7 +75,7 @@ public class RegistrationController(FundRaisingDbContext context,IUserTypeReposi
             return Ok(new RegistrationResponseDto()
             {
                 Success = true,
-                Email = registrationRequestDto.Email, // this will be replaced by JWT TOKEN
+                Email = registrationRequestDto.Email,
                 Message = "User has been Registered Successfully",
                 Errors = null
             });
