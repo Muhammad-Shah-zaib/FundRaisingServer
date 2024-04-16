@@ -1,6 +1,8 @@
+using System.Runtime.InteropServices.JavaScript;
 using FundRaisingServer.Models.DTOs;
 using FundRaisingServer.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Any;
 
 namespace FundRaisingServer.Services;
 
@@ -20,10 +22,11 @@ public class CasesService (FundRaisingDbContext context): ICasesRepository
                     Title = c.Title!,
                     Description = c.Description!,
                     CreatedDate = c.CreatedDate,
-                    CauseId =  c.CauseId,
-                    CauseName = c.Cause.Title
+                    CauseName = c.Cause.Title,
+                    CauseId = c.CauseId
                 })
                 .ToListAsync();
+            
             return cases;
         }
         catch (Exception e)

@@ -21,8 +21,11 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
     {
         try
         {
-            var query = $"INSERT INTO Users VALUES ('{user.FirstName}', '{user.LastName}', '{user.Email}')";
-            await this._context.Database.ExecuteSqlRawAsync(query);
+            const string query = "INSERT INTO Users VALUES (@FirstName, @LastName, @Email)";
+            await this._context.Database.ExecuteSqlRawAsync(query, 
+                new SqlParameter("@FirstName", user.FirstName),
+                new SqlParameter("@LastName", user.LastName),
+                new SqlParameter("@Email", user.Email));
             await this._context.SaveChangesAsync();
             
             return true;
@@ -71,7 +74,7 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
     public async Task<User?> GetUserByEmailAsync( string email )
     {
         // getting the user if exists
-        var query = $"Select * FROM Users Where Email = @UserEmail";
+        const string query = $"Select * FROM Users Where Email = @UserEmail";
         var user = await this._context.Users.FromSqlRaw(query, new SqlParameter("@UserEmail", email)).FirstOrDefaultAsync();
         
         return user; // this return user or null
