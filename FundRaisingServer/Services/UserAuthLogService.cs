@@ -33,7 +33,7 @@ public class UserAuthLogService (FundRaisingDbContext context, IUserRepository u
             
             
             // while saving the event_type since it is an enum so we need to convert its value into string
-            var query = $"INSERT INTO User_Auth_Log VALUES (@EventType, @EventTimeStamp, @UserId) ";
+            const string query = "INSERT INTO User_Auth_Log VALUES (@EventType, @EventTimeStamp, @UserId) ";
 
             await this._context.Database.ExecuteSqlRawAsync(query,
                 new SqlParameter("@EventType", userAuthLogDto.EventType.ToString()),

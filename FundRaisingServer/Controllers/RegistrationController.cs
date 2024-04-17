@@ -97,5 +97,4 @@ public class RegistrationController(FundRaisingDbContext context,IUserTypeReposi
     {
         return Ok("I am working");
     }
-    
 }
