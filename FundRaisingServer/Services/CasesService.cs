@@ -1,8 +1,6 @@
-using System.Runtime.InteropServices.JavaScript;
 using FundRaisingServer.Models.DTOs;
 using FundRaisingServer.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Any;
 
 namespace FundRaisingServer.Services;
 
@@ -12,9 +10,9 @@ public class CasesService (FundRaisingDbContext context): ICasesRepository
 
     public async Task<List<CasesDto>> GetAllCasesAsync()
     {
-        const string query = "SELECT * FROM Cases";
         try
         {
+            const string query = "SELECT * FROM Cases";
             var cases = await this._context.Cases.FromSqlRaw(query)
                 .Select(c => new CasesDto()
                 {

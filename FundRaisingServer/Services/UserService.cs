@@ -75,7 +75,9 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
     {
         // getting the user if exists
         const string query = $"Select * FROM Users Where Email = @UserEmail";
-        var user = await this._context.Users.FromSqlRaw(query, new SqlParameter("@UserEmail", email)).FirstOrDefaultAsync();
+        var user = await this._context.Users.FromSqlRaw(query,
+            new SqlParameter("@UserEmail", email))
+            .FirstOrDefaultAsync();
         
         return user; // this return user or null
     }

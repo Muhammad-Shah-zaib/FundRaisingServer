@@ -6,13 +6,13 @@ public interface ILoginRepository
 {
     /*
      * the method below will try logging
-     * the user in, if and only if thef
+     * the user in, if and only if the
      * credentials are correct to the
      * credentials present in the Db.
      *
      * This method return LoginResponseDto that contains
      * the user email and a JwtToken(string) hence it is
-     * dependant on some other Services too
+     * dependent on some other Services too
      *
      * We can use this method by logging the management
      * staff in since the JwtToken is our authentication scheme

@@ -5,12 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace FundRaisingServer.Controllers;
 
 [ApiController]
-[Route("/Cases")]
+[Route("/[controller]")]
 public class CasesController (ICasesRepository casesRepo): ControllerBase
 {
     private readonly ICasesRepository _casesRepo = casesRepo;
     
     [HttpGet]
+    [Route("GetAllCases")]
     public async Task<List<CasesDto>> GetAllCases()
     {
         return await this._casesRepo.GetAllCasesAsync();

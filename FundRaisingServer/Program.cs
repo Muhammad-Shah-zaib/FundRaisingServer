@@ -34,8 +34,7 @@ builder.Services.AddScoped<ICasesRepository, CasesService>();
 builder.Services.AddDbContext<FundRaisingDbContext>(options => 
     options
         .UseSqlServer(connectionString: connectionString)
-        .LogTo(Console.WriteLine, LogLevel.Information)
-    );
+        .LogTo(Console.WriteLine, LogLevel.Information));
 
 // adding cors for our cors
 builder.Services.AddCors(options =>

@@ -29,8 +29,8 @@ public class PasswordService (FundRaisingDbContext context, IUserRepository user
             var user = await this._userRepo.GetUserByEmailAsync(email);
 
             // Extra check if the user exist or not
-            if (user == null)
-                return false;
+            if (user == null) return false;
+            
             // Hashing the password
             var password = Encoding.UTF8.GetBytes(inputPassword);
             var salt = Encoding.UTF8.GetBytes(RandomSaltGenerator.GenerateSalt(512 / 8));
@@ -62,7 +62,7 @@ public class PasswordService (FundRaisingDbContext context, IUserRepository user
             if (user == null) return false;
         
             // deleting the user password from the table
-            const string query = $"DELETE Passwords WHERE User_ID = @UserId";
+            const string query = "DELETE Passwords WHERE User_ID = @UserId";
 
             await this._context.Database.ExecuteSqlRawAsync(query, 
                 new SqlParameter("@UserId", user.UserId));
