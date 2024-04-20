@@ -28,7 +28,7 @@ public partial class FundRaisingDbContext : DbContext
     public virtual DbSet<UserType> UserTypes { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Name=Connectionstrings:FundRaisingDb");
+        => optionsBuilder.UseSqlServer("Name=ConnectionStrings:FundRaisingDb");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -38,7 +38,9 @@ public partial class FundRaisingDbContext : DbContext
 
             entity.Property(e => e.CaseId).HasColumnName("Case_ID");
             entity.Property(e => e.CauseId).HasColumnName("CauseID");
-            entity.Property(e => e.CreatedDate).HasColumnName("Created_Date");
+            entity.Property(e => e.CreatedDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnName("Created_Date");
             entity.Property(e => e.Description)
                 .HasMaxLength(560)
                 .IsUnicode(false);

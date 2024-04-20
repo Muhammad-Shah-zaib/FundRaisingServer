@@ -92,7 +92,7 @@ public class RegistrationController(FundRaisingDbContext context,IUserTypeReposi
 
     [HttpGet]
     [Route("Test")]
-    // This will check adn validate the JWT token presence
+    // This will check and validate the JWT token presence
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> testing()
     {
