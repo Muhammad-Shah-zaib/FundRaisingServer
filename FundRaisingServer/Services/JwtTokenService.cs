@@ -35,16 +35,7 @@ public class JwtTokenService(IOptionsMonitor<JwtConfig> optionsMonitor): IJwtTok
                 new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                /*
-                 * We have to replace the Hard-Coded 'Manager' with use.Role
-                 * we don't have any Role table in DB rn, so Will do this Later
-                */
-                new Claim(ClaimTypes.Role, "Manager")
             }),
-            /*
-             * Need to change the expiration time based
-             * on Remember me option...
-             */
             Expires = DateTime.UtcNow.AddDays(1),
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(key),

@@ -94,8 +94,6 @@ public class RegistrationController(FundRaisingDbContext context,IUserTypeReposi
     [Route("Test")]
     // This will check adn validate the JWT token presence
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    // this authroization header will check the Roles Claim in the JWT token
-    [Authorize(Roles = "Manager")]
     public async Task<IActionResult> testing()
     {
         return Ok("I am working");
