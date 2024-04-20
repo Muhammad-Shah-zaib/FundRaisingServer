@@ -16,7 +16,7 @@ public class JwtTokenService(IOptionsMonitor<JwtConfig> optionsMonitor): IJwtTok
 
     /*
      * The method below will generate the JSON WEB TOKEN (JWT)
-     * it uses the Secret key from jwt_config that is configure over
+     * it uses the Secret key from jwt_config that is configured over
      * JwtConfig present in appsettings.cs file
      */
     public string GenerateJwtToken(User user)
@@ -34,10 +34,21 @@ public class JwtTokenService(IOptionsMonitor<JwtConfig> optionsMonitor): IJwtTok
                 new Claim("Id", user.UserId.ToString()),
                 new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                /*
+                 * We have to replace the Hard-Coded 'Manager' with use.Role
+                 * we don't have any Role table in DB rn, so Will do this Later
+                */
+                new Claim(ClaimTypes.Role, "Manager")
             }),
-            Expires = DateTime.UtcNow.AddDays(10),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
+            /*
+             * Need to change the expiration time based
+             * on Remember me option...
+             */
+            Expires = DateTime.UtcNow.AddDays(1),
+            SigningCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(key),
+                SecurityAlgorithms.HmacSha256)
         };
 
         var token = jwtTokenHandler.CreateToken(tokenDescriptor);

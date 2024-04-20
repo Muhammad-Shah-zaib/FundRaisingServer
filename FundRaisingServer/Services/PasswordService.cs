@@ -17,7 +17,7 @@ public class PasswordService (FundRaisingDbContext context, IUserRepository user
 
     // saving the password of the user
     /*
-     * Since the Passwords has the User_ID as foreign key so we need
+     * Since the Passwords have the User_ID as foreign key so we need
      * to get the user from the db hence we will get it by using Email
      * and we need userRepository DI for this. 
      */

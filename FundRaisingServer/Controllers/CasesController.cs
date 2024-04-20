@@ -12,8 +12,8 @@ public class CasesController (ICasesRepository casesRepo): ControllerBase
     
     [HttpGet]
     [Route("GetAllCases")]
-    public async Task<List<CasesDto>> GetAllCases()
+    public async Task<ActionResult<List<CasesDto>>> GetAllCases()
     {
-        return await this._casesRepo.GetAllCasesAsync();
+        return Ok(await this._casesRepo.GetAllCasesAsync());
     }
 }
