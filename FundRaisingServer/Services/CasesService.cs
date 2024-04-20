@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 
 namespace FundRaisingServer.Services
 {
@@ -20,16 +22,17 @@ namespace FundRaisingServer.Services
         {
             try
             {
-                var cases = await _context.Cases
-                    .Include(c => c.Cause)
+                // using query to fetch the DATA FROM THE DB
+                const string query = "SELECT * FROM Cases";
+                
+                var cases = await this._context.Cases.FromSqlRaw(query)
                     .Select(c => new CasesDto()
                     {
                         CaseId = c.CaseId,
                         Title = c.Title!,
                         Description = c.Description!,
-                        CreatedDate = c.CreatedDate,
-                        CauseName = c.Cause.Title,
-                        CauseId = c.CauseId
+                        CreatedDate = DateTime.UtcNow,
+                        CauseName = c.CauseName,
                     })
                     .ToListAsync();
 
@@ -42,30 +45,29 @@ namespace FundRaisingServer.Services
             }
         }
 
-        public async Task<CasesDto> GetCaseByIdAsync(int id) // Add this method
+        public async Task<CasesDto?> GetCaseByIdAsync([FromBody] int id) // Add this method
         {
             try
             {
-                var singleCase = await _context.Cases
-                    .Include(c => c.Cause)
+                // using the query method ot get the cases from the DB
+                const string query = "SELECT * FROM Cases WHERE Case_ID = @CaseId";
+                var singleCase = await _context.Cases.FromSqlRaw(query, 
+                        new SqlParameter("@CaseId", id))
                     .SingleOrDefaultAsync(c => c.CaseId == id);
-
-                if (singleCase == null)
-                {
-                    return null; // Case not found
-                }
-
-                var caseDto = new CasesDto()
+                
+                if (singleCase == null) return null; // Case not found
+                
+                // returning the founded case
+                return new CasesDto()
                 {
                     CaseId = singleCase.CaseId,
                     Title = singleCase.Title!,
                     Description = singleCase.Description!,
-                    CreatedDate = singleCase.CreatedDate,
-                    CauseName = singleCase.Cause.Title,
-                    CauseId = singleCase.CauseId
+                    CreatedDate = DateTime.UtcNow,
+                    CauseName = singleCase.CauseName,
                 };
 
-                return caseDto;
+                
             }
             catch (Exception e)
             {
@@ -78,15 +80,16 @@ namespace FundRaisingServer.Services
         {
             try
             {
-                var newCase = new Case
-                {
-                    Title = caseDto.Title,
-                    Description = caseDto.Description,
-                    CreatedDate = caseDto.CreatedDate,
-                    CauseId = caseDto.CauseId
-                };
-
-                _context.Cases.Add(newCase);
+                // Inserting the new case into the db via query method
+                const string query = "INSERT INTO Cases VALUES (@Title, @Description, @Created_Date, @CauseName)";
+                
+                // providing the params for protecting against Sql Injection
+                await _context.Database.ExecuteSqlRawAsync(query, 
+                    new SqlParameter("@Title", caseDto.Title),
+                    new SqlParameter("@Description", caseDto.Description),
+                    new SqlParameter("@Created_Date", caseDto.CreatedDate),
+                    new SqlParameter("@CauseName", caseDto.CauseName));
+                // saving the changes
                 await _context.SaveChangesAsync();
             }
             catch (Exception e)
@@ -100,19 +103,23 @@ namespace FundRaisingServer.Services
         {
             try
             {
+                // query for updating the case
+                const string query = "UPDATE [Cases] SET [Title] = @Title, [Description] = @Description, [Cause_Name] = @CauseName WHERE Case_ID = @CaseId"; 
+                
+                // Checking for the Case
                 var existingCase = await _context.Cases.FindAsync(id);
-
                 if (existingCase == null)
                 {
                     throw new ArgumentException("Case not found");
                 }
 
-                existingCase.Title = caseDto.Title;
-                existingCase.Description = caseDto.Description;
-                existingCase.CreatedDate = caseDto.CreatedDate;
-                existingCase.CauseId = caseDto.CauseId;
-
-                _context.Update(existingCase);
+                // executing the query using the Parameterized Query 
+                // for protection against Sql Injection
+                await _context.Database.ExecuteSqlRawAsync(query,
+                    new SqlParameter("@Title", caseDto.Title),
+                        new SqlParameter("@Description", caseDto.Description),
+                        new SqlParameter("@CauseName", caseDto.CauseName),
+                        new SqlParameter("@CaseId", id));
                 await _context.SaveChangesAsync();
             }
             catch (Exception e)

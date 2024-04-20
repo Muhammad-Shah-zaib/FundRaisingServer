@@ -17,7 +17,7 @@ public partial class FundRaisingDbContext : DbContext
 
     public virtual DbSet<Case> Cases { get; set; }
 
-    public virtual DbSet<Cause> Causes { get; set; }
+    public virtual DbSet<CasesFund> CasesFunds { get; set; }
 
     public virtual DbSet<Password> Passwords { get; set; }
 
@@ -37,9 +37,12 @@ public partial class FundRaisingDbContext : DbContext
             entity.HasKey(e => e.CaseId).HasName("PK__Cases__D062FC05A83F1357");
 
             entity.Property(e => e.CaseId).HasColumnName("Case_ID");
-            entity.Property(e => e.CauseId).HasColumnName("CauseID");
+            entity.Property(e => e.CauseName)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasColumnName("Cause_Name");
             entity.Property(e => e.CreatedDate)
-                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
                 .HasColumnName("Created_Date");
             entity.Property(e => e.Description)
                 .HasMaxLength(560)
@@ -47,27 +50,33 @@ public partial class FundRaisingDbContext : DbContext
             entity.Property(e => e.Title)
                 .HasMaxLength(50)
                 .IsUnicode(false);
-
-            entity.HasOne(d => d.Cause).WithMany(p => p.Cases)
-                .HasForeignKey(d => d.CauseId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Cases__CauseID__75A278F5");
         });
 
-        modelBuilder.Entity<Cause>(entity =>
+        modelBuilder.Entity<CasesFund>(entity =>
         {
-            entity.HasKey(e => e.CauseId).HasName("PK__Causes__BC664993D950767B");
+            entity.HasKey(e => e.CaseFundId).HasName("PK__Cases_Fu__A919421DA7E03F01");
 
-            entity.Property(e => e.CauseId).HasColumnName("Cause_ID");
-            entity.Property(e => e.CreatedDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.Description)
-                .HasMaxLength(560)
-                .IsUnicode(false);
-            entity.Property(e => e.Title)
-                .HasMaxLength(50)
-                .IsUnicode(false);
+            entity.ToTable("Cases_Funds");
+
+            entity.HasIndex(e => e.CaseId, "UQ__Cases_Fu__A8FC9C6FB368CE6F").IsUnique();
+
+            entity.Property(e => e.CaseFundId).HasColumnName("caseFund_id");
+            entity.Property(e => e.CaseId).HasColumnName("case_Id");
+            entity.Property(e => e.CollectedAmount)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("collected_amount");
+            entity.Property(e => e.RemainingAmount)
+                .HasComputedColumnSql("([Required_amount]-[collected_amount])", true)
+                .HasColumnType("decimal(11, 2)")
+                .HasColumnName("Remaining_amount");
+            entity.Property(e => e.RequiredAmount)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("Required_amount");
+
+            entity.HasOne(d => d.Case).WithOne(p => p.CasesFund)
+                .HasForeignKey<CasesFund>(d => d.CaseId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Cases_Fun__case___1332DBDC");
         });
 
         modelBuilder.Entity<Password>(entity =>

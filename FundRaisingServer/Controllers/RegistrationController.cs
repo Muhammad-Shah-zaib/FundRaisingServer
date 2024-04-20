@@ -9,7 +9,7 @@ namespace FundRaisingServer.Controllers;
 
 [ApiController]
 [Route("Registration")]
-public class RegistrationController(FundRaisingDbContext context,IUserTypeRepository userTypeService, IUserRepository userRepo, IPasswordRepository passwordRepo, IUserAuthLogRepository userAuthLogRepo): ControllerBase
+public class RegistrationController(IUserTypeRepository userTypeService, IUserRepository userRepo, IPasswordRepository passwordRepo, IUserAuthLogRepository userAuthLogRepo): ControllerBase
 {
     private readonly IUserRepository _userRepo = userRepo;
     private readonly IPasswordRepository _passwordRepo = passwordRepo;

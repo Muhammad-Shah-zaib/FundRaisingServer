@@ -16,4 +16,38 @@ public class CasesController (ICasesRepository casesRepo): ControllerBase
     {
         return await this._casesRepo.GetAllCasesAsync();
     }
+    
+    [HttpPost]
+    [Route("AddCase")]
+    public async Task<IActionResult> AddCase([FromBody] CasesDto caseDto)
+    {
+        // Perform validation if needed
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        await _casesRepo.AddCaseAsync(caseDto);
+        return Ok();
+    }
+    
+    [HttpPut]
+    [Route("UpdateCase/{id}")]
+    public async Task<IActionResult> UpdateCase(int id, [FromBody] CasesDto caseDto)
+    {
+        // Perform validation if needed
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var existingCase = await _casesRepo.GetCaseByIdAsync(id);
+        if (existingCase == null)
+        {
+            return NotFound();
+        }
+
+        await _casesRepo.UpdateCaseAsync(id, caseDto);
+        return Ok();
+    }
 }

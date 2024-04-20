@@ -11,9 +11,9 @@ public partial class Case
 
     public string? Description { get; set; }
 
-    public DateOnly CreatedDate { get; set; }
+    public DateTime? CreatedDate { get; set; }
 
-    public int CauseId { get; set; }
+    public string? CauseName { get; set; }
 
-    public virtual Cause Cause { get; set; } = null!;
+    public virtual CasesFund? CasesFund { get; set; }
 }
