@@ -7,13 +7,15 @@ public partial class Case
 {
     public int CaseId { get; set; }
 
-    public string? Title { get; set; }
+    public string Title { get; set; } = null!;
 
-    public string? Description { get; set; }
+    public string Description { get; set; } = null!;
 
-    public DateTime? CreatedDate { get; set; }
+    public DateTime CreatedDate { get; set; }
 
-    public string? CauseName { get; set; }
+    public string CauseName { get; set; } = null!;
+
+    public bool VerifiedCases { get; set; }
 
     public virtual CasesFund? CasesFund { get; set; }
 }

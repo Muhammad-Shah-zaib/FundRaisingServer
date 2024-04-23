@@ -34,7 +34,7 @@ public class CasesController(ICasesRepository casesRepo) : ControllerBase
 
     [HttpPut]
     [Route("UpdateCase/{id}")]
-    public async Task<IActionResult> UpdateCase(int id, [FromBody] CaseDto caseDto)
+    public async Task<IActionResult> UpdateCase([FromRoute] int id, [FromBody] CaseDto caseDto)
     {
         // Perform validation if needed
         if (!ModelState.IsValid)
@@ -54,7 +54,7 @@ public class CasesController(ICasesRepository casesRepo) : ControllerBase
 
     [HttpDelete]
     [Route("DeleteCase/{id}")]
-    public async Task<ActionResult<Case>> DeleteCase(int id)
+    public async Task<ActionResult<Case>> DeleteCase([FromRoute] int id)
     {
         // we need to update this...
         /*
@@ -79,5 +79,12 @@ public class CasesController(ICasesRepository casesRepo) : ControllerBase
 
         await _casesRepo.DeleteCaseAsync(id);
         return Ok(existingCase);
+    }
+
+    [HttpPut]
+    [Route("VerifyCase/{id}")]
+    public async Task<ActionResult<CaseResponseDto>> VerifyCase([FromRoute] int id)
+    {
+        return await this._casesRepo.VerifyCaseAsync(id);
     }
 }
