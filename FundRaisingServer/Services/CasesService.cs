@@ -15,6 +15,7 @@ namespace FundRaisingServer.Services
             _context = context;
         }
 
+        // the method to get all the cases from the DB
         public async Task<IEnumerable<CaseResponseDto>> GetAllCasesAsync()
         {
             try
@@ -29,7 +30,7 @@ namespace FundRaisingServer.Services
                         Title = c.Title,
                         Description = c.Description,
                         CreatedDate = c.CreatedDate,
-                        VerifiedCases = c.VerifiedCases,
+                        VerifiedStatus = c.VerifiedStatus,
                         CauseName = c.CauseName ?? string.Empty,
                     })
                     .ToListAsync();
@@ -43,6 +44,7 @@ namespace FundRaisingServer.Services
             }
         }
 
+        // the methid to get a single case from the DB
         public async Task<CaseResponseDto?> GetCaseByIdAsync([FromBody] int id) // Add this method
         {
             try
@@ -62,7 +64,7 @@ namespace FundRaisingServer.Services
                     Title = singleCase.Title,
                     Description = singleCase.Description,
                     CreatedDate = singleCase.CreatedDate,
-                    VerifiedCases = singleCase.VerifiedCases,
+                    VerifiedStatus = singleCase.VerifiedStatus,
                     CauseName = singleCase.CauseName ?? string.Empty,
                 };
 
@@ -75,12 +77,13 @@ namespace FundRaisingServer.Services
             }
         }
 
+        // the method to add a new case to the DB
         public async Task AddCaseAsync(AddCaseRequestDto caseRequestDto)
         {
             try
             {
                 // Inserting the new case into the db via query method
-                const string query = "INSERT INTO Cases VALUES (@Title, @Description, @Created_Date, @CauseName, @VerifiedCases)";
+                const string query = "INSERT INTO Cases VALUES (@Title, @Description, @Created_Date, @CauseName, @VerifiedStatus)";
 
                 // providing the params for protecting against Sql Injection
                 await _context.Database.ExecuteSqlRawAsync(query,
@@ -88,7 +91,7 @@ namespace FundRaisingServer.Services
                     new SqlParameter("@Description", caseRequestDto.Description),
                     new SqlParameter("@Created_Date", DateTime.UtcNow),
                     new SqlParameter("@CauseName", caseRequestDto.CauseName),
-                    new SqlParameter("@VerifiedCases", caseRequestDto.VerifiedCases));
+                    new SqlParameter("@VerifiedStatus", caseRequestDto.VerifiedStatus));
                 // saving the changes
                 await _context.SaveChangesAsync();
             }
@@ -98,6 +101,8 @@ namespace FundRaisingServer.Services
                 throw;
             }
         }
+
+        // the method to delete a case from the DB
         public async Task DeleteCaseAsync(int id)
         {
             try
@@ -122,12 +127,14 @@ namespace FundRaisingServer.Services
                 throw;
             }
         }
+
+        // the method to update a case in the DB
         public async Task UpdateCaseAsync(int id, CaseDto caseDto)
         {
             try
             {
                 // query for updating the case
-                const string query = "UPDATE [Cases] SET [Title] = @Title, [Description] = @Description, [Cause_Name] = @CauseName, [Verified_Cases] = @VerifiedCases WHERE Case_ID = @CaseId";
+                const string query = "UPDATE [Cases] SET [Title] = @Title, [Description] = @Description, [Cause_Name] = @CauseName, [Verified_Status] = @VerifiedStatus WHERE Case_ID = @CaseId";
 
                 // Checking for the Case
                 var existingCase = await _context.Cases.FindAsync(id) ?? throw new ArgumentException("Case not found");
@@ -138,7 +145,7 @@ namespace FundRaisingServer.Services
                     new SqlParameter("@Title", caseDto.Title),
                         new SqlParameter("@Description", caseDto.Description),
                         new SqlParameter("@CauseName", caseDto.CauseName),
-                        new SqlParameter("@VerifiedCases", caseDto.VerifiedCases),
+                        new SqlParameter("@VerifiedStatus", caseDto.VerifiedStatus),
                         new SqlParameter("@CaseId", id));
                 await _context.SaveChangesAsync();
             }
@@ -149,15 +156,16 @@ namespace FundRaisingServer.Services
             }
         }
 
+        // the method to verify a case in the DB
         public async Task<CaseResponseDto> VerifyCaseAsync(int id)
         {
-            // WE NEED TO HANDLE teh edge CASES
+            // WE NEED TO HANDLE teh edge CASES... WILL DO THIS LATER
 
             // get the case from db
             var existingCase = await _context.Cases.FindAsync(id) ?? throw new ArgumentException("Case not found");
 
             // now we will verify the case
-            const string query = "UPDATE [Cases] SET [Verified_Cases] = 1 WHERE Case_ID = @CaseId";
+            const string query = "UPDATE [Cases] SET [Verified_Status] = 1 WHERE Case_ID = @CaseId";
 
             await this._context.Database.ExecuteSqlRawAsync(query,
                 new SqlParameter("@CaseId", id));
@@ -171,9 +179,36 @@ namespace FundRaisingServer.Services
                 Description = existingCase.Description,
                 CreatedDate = existingCase.CreatedDate,
                 CauseName = existingCase.CauseName,
-                VerifiedCases = true
+                VerifiedStatus = true
             };
 
+        }
+
+        // the method to unverify a case in the DB
+        public async Task<CaseResponseDto> UnVerifyCaseAsync(int id)
+        {
+            // WE NEED TO HANDLE teh edge CASES... Will DO THIS LATER
+
+            // get the case from db
+            var existingCase = await _context.Cases.FindAsync(id) ?? throw new ArgumentException("Case not found");
+
+            // now we will verify the case
+            const string query = "UPDATE [Cases] SET [Verified_Status] = 0 WHERE Case_ID = @CaseId";
+
+            await this._context.Database.ExecuteSqlRawAsync(query,
+                new SqlParameter("@CaseId", id));
+            await this._context.SaveChangesAsync();
+
+            // returning the updated case
+            return new CaseResponseDto()
+            {
+                CaseId = id,
+                Title = existingCase.Title,
+                Description = existingCase.Description,
+                CreatedDate = existingCase.CreatedDate,
+                CauseName = existingCase.CauseName,
+                VerifiedStatus = false
+            };
         }
     }
 }

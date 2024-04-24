@@ -85,6 +85,30 @@ public class CasesController(ICasesRepository casesRepo) : ControllerBase
     [Route("VerifyCase/{id}")]
     public async Task<ActionResult<CaseResponseDto>> VerifyCase([FromRoute] int id)
     {
-        return await this._casesRepo.VerifyCaseAsync(id);
+        try
+        {
+            return await this._casesRepo.VerifyCaseAsync(id);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
+        }
+    }
+
+    [HttpPut]
+    [Route("UnVerifyCase/{id}")]
+    public async Task<ActionResult<CaseResponseDto>> UnVerifyCase([FromRoute] int id)
+    {
+        // IMPLEMENTING THIS FUNCTION RN
+        try
+        {
+            return await this._casesRepo.UnVerifyCaseAsync(id);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
+        }
     }
 }

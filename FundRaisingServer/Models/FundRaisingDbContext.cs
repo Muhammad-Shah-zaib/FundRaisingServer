@@ -50,7 +50,7 @@ public partial class FundRaisingDbContext : DbContext
             entity.Property(e => e.Title)
                 .HasMaxLength(50)
                 .IsUnicode(false);
-            entity.Property(e => e.VerifiedCases).HasColumnName("Verified_Cases");
+            entity.Property(e => e.VerifiedStatus).HasColumnName("Verified_Status");
         });
 
         modelBuilder.Entity<CasesFund>(entity =>

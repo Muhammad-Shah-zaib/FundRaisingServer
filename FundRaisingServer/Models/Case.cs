@@ -15,7 +15,7 @@ public partial class Case
 
     public string CauseName { get; set; } = null!;
 
-    public bool VerifiedCases { get; set; }
+    public bool VerifiedStatus { get; set; }
 
     public virtual CasesFund? CasesFund { get; set; }
 }
