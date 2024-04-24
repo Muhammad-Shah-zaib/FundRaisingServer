@@ -23,4 +23,6 @@ public interface IUserRepository
      */
     Task<bool> CheckUserAsync(string email, string password);
 
+    Task<IEnumerable<UserResponseDto>> GetAllUsersAsync();
+
 }

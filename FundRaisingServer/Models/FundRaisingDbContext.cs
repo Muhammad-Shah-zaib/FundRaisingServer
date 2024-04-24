@@ -45,7 +45,7 @@ public partial class FundRaisingDbContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("Created_Date");
             entity.Property(e => e.Description)
-                .HasMaxLength(560)
+                .HasMaxLength(1000)
                 .IsUnicode(false);
             entity.Property(e => e.Title)
                 .HasMaxLength(50)
@@ -139,6 +139,7 @@ public partial class FundRaisingDbContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.UserAuthLogs)
                 .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__User_Auth__User___6C190EBB");
         });
 

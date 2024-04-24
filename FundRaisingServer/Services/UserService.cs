@@ -111,7 +111,7 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
         if (userFromDb  == null) return false;
         
         // getting the passwords
-        var query = $"SELECT * FROM Passwords WHERE User_ID = @UserId";
+        const string query = $"SELECT * FROM Passwords WHERE User_ID = @UserId";
         var userPassword = await this._context.Passwords.FromSqlRaw(query, new SqlParameter("@UserId", userFromDb.UserId)).FirstOrDefaultAsync();
         
         // checking the password
@@ -122,4 +122,36 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
 
         return result;
     }
+
+    // private async Task<UserAuthLog> GetUserLogsByIdAsync(int id)
+    // {
+    //     const string query = "SELECT * FROM User_Auth_Log WHERE User_ID = @UserId";
+    //     var logs = await this._context.UserAuthLogs.FromSqlRaw(query,
+    //             new SqlParameter("@UserId", id))
+    //         .Select(l => new UserAuthLogDto()
+    //         {
+    //             EventType = l.EventTimestamp,
+    //             EventTimestamp = l.EventTimestamp
+    //         })
+    //         .ToListAsync()
+    //         ;
+    // }
+     public async Task<IEnumerable<UserResponseDto>> GetAllUsersAsync()
+     {
+         const string query = "SELECT u.[User_ID], u.[First_Name], u.[Last_Name] AS Last_Name, u.[Email], [l].[Log_ID], [l].[Event_Type], [l].[Event_TimeStamp] FROM Users u JOIN [dbo].[User_Auth_Log] l ON [u].[User_ID] = [l].[User_ID]";
+
+         return await this._context.Users.FromSqlRaw(query)
+             .Select(u => new UserResponseDto()
+             {
+                 FirstName = u.FirstName!,
+                 LastName = u.LastName ?? string.Empty,
+                 Email = u.Email!,
+                 RegistrationTimeStamp = u.UserAuthLogs
+                     .Where(l => l.EventType == UserEventType.Registration.ToString())
+                     .Select(l => l.EventTimestamp)
+                     .FirstOrDefault()
+                     
+             })
+             .ToListAsync();
+     }
 }
