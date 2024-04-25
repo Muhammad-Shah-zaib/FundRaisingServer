@@ -9,7 +9,7 @@ public partial class UserAuthLog
 
     public string EventType { get; set; } = null!;
 
-    public DateTime EventTimestamp { get; set; }
+    public DateTime? EventTimestamp { get; set; }
 
     public int UserId { get; set; }
 

@@ -6,28 +6,29 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Extensions;
 
 namespace FundRaisingServer.Services;
 
 // this Class will contain two methods for adding the user in db along with there passwords
-public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hasher): IUserRepository
+public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hasher) : IUserRepository
 {
     // DIs
     private readonly FundRaisingDbContext _context = context;
     private readonly IArgon2Hasher _argon2Hasher = argon2Hasher;
-    
+
     // this method will save the User in the database
     public async Task<bool> SaveUserAsync(RegistrationRequestDto user)
     {
         try
         {
             const string query = "INSERT INTO Users VALUES (@FirstName, @LastName, @Email)";
-            await this._context.Database.ExecuteSqlRawAsync(query, 
+            await this._context.Database.ExecuteSqlRawAsync(query,
                 new SqlParameter("@FirstName", user.FirstName),
                 new SqlParameter("@LastName", user.LastName),
                 new SqlParameter("@Email", user.Email));
             await this._context.SaveChangesAsync();
-            
+
             return true;
         }
         catch (Exception e)
@@ -35,9 +36,9 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
             Console.WriteLine(e);
             return false;
         }
-        
+
     }
-    
+
     // this method will save the password in the database
     public async Task<bool> SaveUserPasswordAsync(string email, string inputPassword)
     {
@@ -70,15 +71,15 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
             throw;
         }
     }
-    
-    public async Task<User?> GetUserByEmailAsync( string email )
+
+    public async Task<User?> GetUserByEmailAsync(string email)
     {
         // getting the user if exists
         const string query = $"Select * FROM Users Where Email = @UserEmail";
         var user = await this._context.Users.FromSqlRaw(query,
             new SqlParameter("@UserEmail", email))
             .FirstOrDefaultAsync();
-        
+
         return user; // this return user or null
     }
 
@@ -95,25 +96,25 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
             Console.WriteLine(e);
             return false;
         }
-        
+
     }
-    
-    
+
+
     /*
-     * this method will check either
-     * the user is present in the db
-     * or not
-     */
+    * this method will check either
+    * the user is present in the db
+    * or not
+    */
     public async Task<bool> CheckUserAsync(string email, string inputPassword)
     {
         // checking the user email
         var userFromDb = await this.GetUserByEmailAsync(email);
-        if (userFromDb  == null) return false;
-        
+        if (userFromDb == null) return false;
+
         // getting the passwords
         const string query = $"SELECT * FROM Passwords WHERE User_ID = @UserId";
         var userPassword = await this._context.Passwords.FromSqlRaw(query, new SqlParameter("@UserId", userFromDb.UserId)).FirstOrDefaultAsync();
-        
+
         // checking the password
         var result = this._argon2Hasher.VerifyHash(
             Convert.FromBase64String(userPassword!.HashedPassword!),
@@ -123,35 +124,28 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
         return result;
     }
 
-    // private async Task<UserAuthLog> GetUserLogsByIdAsync(int id)
-    // {
-    //     const string query = "SELECT * FROM User_Auth_Log WHERE User_ID = @UserId";
-    //     var logs = await this._context.UserAuthLogs.FromSqlRaw(query,
-    //             new SqlParameter("@UserId", id))
-    //         .Select(l => new UserAuthLogDto()
-    //         {
-    //             EventType = l.EventTimestamp,
-    //             EventTimestamp = l.EventTimestamp
-    //         })
-    //         .ToListAsync()
-    //         ;
-    // }
-     public async Task<IEnumerable<UserResponseDto>> GetAllUsersAsync()
-     {
-         const string query = "SELECT u.[User_ID], u.[First_Name], u.[Last_Name] AS Last_Name, u.[Email], [l].[Log_ID], [l].[Event_Type], [l].[Event_TimeStamp] FROM Users u JOIN [dbo].[User_Auth_Log] l ON [u].[User_ID] = [l].[User_ID]";
+    public async Task<IEnumerable<UserResponseDto>> GetAllUsersAsync()
+    {
+        const string query = "SELECT u.[User_ID], u.[First_Name], u.[Last_Name] AS Last_Name, u.[Email], [l].[Log_ID], [l].[Event_Type], [l].[Event_TimeStamp] FROM Users u JOIN [dbo].[User_Auth_Log] l ON [u].[User_ID] = [l].[User_ID]";
+        
+        
+        return await this._context.Users.FromSqlRaw(query)
+            .Select(u => new UserResponseDto()
+            {
+                FirstName = u.FirstName!,
+                LastName = u.LastName!,
+                Email = u.Email,
+                UserAuthLogsList = u.UserAuthLogs
+                    .Where(l => l.UserId == u.UserId)
+                    .Select(l => new UserAuthLogsResponseDto()
+                    {
+                        EventType = l.EventType,
+                        EventTimestamp = l.EventTimestamp
+                    })
+                    .Distinct()
+                    .ToList()
+            })
+            .ToListAsync();
 
-         return await this._context.Users.FromSqlRaw(query)
-             .Select(u => new UserResponseDto()
-             {
-                 FirstName = u.FirstName!,
-                 LastName = u.LastName ?? string.Empty,
-                 Email = u.Email!,
-                 RegistrationTimeStamp = u.UserAuthLogs
-                     .Where(l => l.EventType == UserEventType.Registration.ToString())
-                     .Select(l => l.EventTimestamp)
-                     .FirstOrDefault()
-                     
-             })
-             .ToListAsync();
-     }
+    }
 }

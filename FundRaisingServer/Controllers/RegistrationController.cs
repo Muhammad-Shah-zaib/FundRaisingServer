@@ -9,13 +9,13 @@ namespace FundRaisingServer.Controllers;
 
 [ApiController]
 [Route("Registration")]
-public class RegistrationController(IUserTypeRepository userTypeService, IUserRepository userRepo, IPasswordRepository passwordRepo, IUserAuthLogRepository userAuthLogRepo): ControllerBase
+public class RegistrationController(IUserTypeRepository userTypeService, IUserRepository userRepo, IPasswordRepository passwordRepo, IUserAuthLogRepository userAuthLogRepo) : ControllerBase
 {
     private readonly IUserRepository _userRepo = userRepo;
     private readonly IPasswordRepository _passwordRepo = passwordRepo;
     private readonly IUserAuthLogRepository _userAuthLogRepo = userAuthLogRepo;
     private readonly IUserTypeRepository _userTypeService = userTypeService;
-    
+
     [HttpPost]
     public async Task<ActionResult<RegistrationResponseDto>> Register([FromBody] RegistrationRequestDto registrationRequestDto)
     {
@@ -27,19 +27,18 @@ public class RegistrationController(IUserTypeRepository userTypeService, IUserRe
              * is already done by Framework
              */
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            
+
 
             // checking if the Email already exists or not
-            if ( (await this._userRepo.GetUserByEmailAsync(registrationRequestDto.Email)) != null )
+            if ((await this._userRepo.GetUserByEmailAsync(registrationRequestDto.Email)) != null)
                 return StatusCode(409, "Email Already Exists");
-        
+
             // saving User
             if (!(await this._userRepo.SaveUserAsync(registrationRequestDto)))
             {
                 return StatusCode(500, "Failed to save User");
             }
 
-           
             // saving password of the user
             if (!(await this._passwordRepo.SaveUserPasswordAsync(registrationRequestDto.Email,
                     registrationRequestDto.Password)))
@@ -60,17 +59,17 @@ public class RegistrationController(IUserTypeRepository userTypeService, IUserRe
 
             // Saving user types
             if (!await this._userTypeService.SaveUserTypeAsync(new UserTypeDto()
-                {
-                    UserType = registrationRequestDto.UserType,
-                    Email = registrationRequestDto.Email
-                }))
+            {
+                UserType = registrationRequestDto.UserType,
+                Email = registrationRequestDto.Email
+            }))
             {
                 await this._passwordRepo.DeleteUserPasswordByEmailAsync(registrationRequestDto.Email);
                 await this._userRepo.DeleteUserByEmailAsync(registrationRequestDto.Email);
                 // need to implement a method for deleting the logs
                 return StatusCode(500, "Failed so save user");
             }
-            
+
             // Returning the response Dto
             return Ok(new RegistrationResponseDto()
             {
@@ -86,7 +85,7 @@ public class RegistrationController(IUserTypeRepository userTypeService, IUserRe
             throw;
         }
 
-        
+
     }
 
 

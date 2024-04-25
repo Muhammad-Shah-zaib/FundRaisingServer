@@ -3,10 +3,11 @@ using FundRaisingServer.Repositories;
 
 namespace FundRaisingServer.Services;
 
-public class LoginService(IJwtTokenRepository jwtTokenService, IUserRepository userRepo): ILoginRepository
+public class LoginService(IJwtTokenRepository jwtTokenService, IUserRepository userRepo, IUserAuthLogRepository userAuthLogRepo) : ILoginRepository
 {
     private readonly IJwtTokenRepository _jwtTokenService = jwtTokenService;
     private readonly IUserRepository _userService = userRepo;
+    private readonly IUserAuthLogRepository _userAuthLogRepo = userAuthLogRepo;
 
     // to know about the method below refer to its Interface
     public async Task<LoginResponseDto?> LoginAsync(LoginRequestDto request)
@@ -14,7 +15,18 @@ public class LoginService(IJwtTokenRepository jwtTokenService, IUserRepository u
         try
         {
             // validating the user
-            if (! await this._userService.CheckUserAsync(request.Email, request.Password) ) return null;
+            if (!await this._userService.CheckUserAsync(request.Email, request.Password)) return null;
+
+            // we need to add the log of last login in the db
+            try
+            {
+                await this._userAuthLogRepo.SaveUserAuthLogAsync(request.Email, UserEventType.Last_Login);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
 
             var user = await this._userService.GetUserByEmailAsync(request.Email);
 
@@ -28,7 +40,7 @@ public class LoginService(IJwtTokenRepository jwtTokenService, IUserRepository u
                 Token = token,
                 Status = true
             };
-            
+
             return response;
         }
         catch (Exception e)
