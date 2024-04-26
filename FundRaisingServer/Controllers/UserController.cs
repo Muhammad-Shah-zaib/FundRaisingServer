@@ -11,6 +11,7 @@ public class UserController (IUserRepository userRepo): ControllerBase
     private readonly IUserRepository _userRepo = userRepo;
     
     [HttpGet]
+    [Route("GetAllUsers")]
     public async Task<IEnumerable<UserResponseDto>> GetAllUsers()
     {
         return await this._userRepo.GetAllUsersAsync();

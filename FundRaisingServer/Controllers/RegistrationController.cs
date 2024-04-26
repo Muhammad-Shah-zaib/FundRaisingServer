@@ -23,7 +23,7 @@ public class RegistrationController(IUserTypeRepository userTypeService, IUserRe
         {
             /*
              * Since the DataAnnotations are used so no need for
-             * manually checking for the *particular modelState* , Since it
+             * manually checking for the *particular modelState* , as it
              * is already done by Framework
              */
             if (!ModelState.IsValid) return BadRequest(ModelState);

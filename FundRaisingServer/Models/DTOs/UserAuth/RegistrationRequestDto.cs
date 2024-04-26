@@ -11,7 +11,7 @@ public class RegistrationRequestDto
      * MS SQL SERVER
      */
     
-    public int UserId { get; set; }
+    public int? UserId { get; set; }
     [Required]
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;

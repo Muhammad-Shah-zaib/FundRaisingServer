@@ -13,10 +13,9 @@ public class UserAuthLogService(FundRaisingDbContext context, IUserRepository us
     private readonly IUserRepository _userRepo = userRepo;
     public async Task<bool> SaveUserAuthLogAsync(string email, UserEventType eventTypeEnum)
     {
-            Console.WriteLine(eventTypeEnum.GetDisplayName());
         try
         {
-            // getting the user to get its id
+            // getting the user to get his/her id
             var user = await this._userRepo.GetUserByEmailAsync(email);
             if (user == null) return false;
 
@@ -44,7 +43,6 @@ public class UserAuthLogService(FundRaisingDbContext context, IUserRepository us
             {
                 // while saving the event_type since it is an enum so we need to convert its value into string
                 const string insertQuery = "INSERT INTO User_Auth_Log VALUES (@EventType, @EventTimestamp, @UserId) ";
-                Console.WriteLine(userAuthLogDto.EventType.ToString());
                 await this._context.Database.ExecuteSqlRawAsync(insertQuery,
                     new SqlParameter("@EventType", userAuthLogDto.EventType.GetDisplayName()),
                     new SqlParameter("@EventTimestamp", userAuthLogDto.EventTimestamp),
