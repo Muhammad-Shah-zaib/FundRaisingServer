@@ -24,6 +24,7 @@ public class LoginService(IJwtTokenRepository jwtTokenService, IUserRepository u
             }
             catch (Exception e)
             {
+                // not terminating the program even if the log is not saved just logging the error out...
                 Console.WriteLine(e);
                 throw;
             }
@@ -31,7 +32,7 @@ public class LoginService(IJwtTokenRepository jwtTokenService, IUserRepository u
             var user = await this._userService.GetUserByEmailAsync(request.Email);
 
             if (user == null) return null;
-            // generate JwtToken if we have the user
+            // generate JWTToken if we have the user
             var token = this._jwtTokenService.GenerateJwtToken(user);
 
             var response = new LoginResponseDto()

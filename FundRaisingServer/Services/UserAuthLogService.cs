@@ -50,14 +50,10 @@ public class UserAuthLogService(FundRaisingDbContext context, IUserRepository us
                 await this._context.SaveChangesAsync();
                 return true;
             }
-
-            const string updateQuery =
-                "UPDATE User_Auth_log SET Event_Timestamp = DEFAULT  WHERE User_ID = @userId AND Event_Type = @eventType";
-
-            await this._context.Database.ExecuteSqlRawAsync(updateQuery,
-                new SqlParameter("@userId", user.UserId),
-                new SqlParameter("@eventType", eventTypeEnum.GetDisplayName()));
-            await this._context.SaveChangesAsync();
+            // updating the log if the log already exist
+            else
+                await this.UpdateUserAuthLogAsync(user.UserId, eventTypeEnum);
+            
             return true;
 
         }
@@ -67,5 +63,17 @@ public class UserAuthLogService(FundRaisingDbContext context, IUserRepository us
             return false;
         }
 
+    }
+
+    public async Task<bool> UpdateUserAuthLogAsync(int userId, UserEventType eventTypeEnum)
+    {
+        const string updateQuery =
+            "UPDATE User_Auth_log SET Event_Timestamp = DEFAULT  WHERE User_ID = @userId AND Event_Type = @eventType";
+
+        await this._context.Database.ExecuteSqlRawAsync(updateQuery,
+            new SqlParameter("@userId", userId),
+            new SqlParameter("@eventType", eventTypeEnum.GetDisplayName()));
+        await this._context.SaveChangesAsync();
+        return true;
     }
 }
