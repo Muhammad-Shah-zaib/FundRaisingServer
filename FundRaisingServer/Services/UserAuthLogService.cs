@@ -30,7 +30,7 @@ public class UserAuthLogService(FundRaisingDbContext context, IUserRepository us
                 EventTimestamp = DateTime.UtcNow,
                 UserId = user.UserId
             };
-            
+
             // we will check if the user has already a log of UserEventType or not
             // this can only happened in case of already existing Last_Login event
             // and also for Last_Update
@@ -54,7 +54,7 @@ public class UserAuthLogService(FundRaisingDbContext context, IUserRepository us
             // updating the log if the log already exist
             else
                 await this.UpdateUserAuthLogAsync(user.UserId, eventTypeEnum);
-            
+
             return true;
 
         }
@@ -76,5 +76,22 @@ public class UserAuthLogService(FundRaisingDbContext context, IUserRepository us
             new SqlParameter("@eventType", eventTypeEnum.GetDisplayName()));
         await this._context.SaveChangesAsync();
         return true;
+    }
+
+    public async Task<bool> DeleteUserAuthLogAsync(int userId)
+    {
+        try
+        {
+            const string deleteQuery = "DELETE User_Auth_Log WHERE User_ID = @userId";
+            await this._context.Database.ExecuteSqlRawAsync(deleteQuery, new SqlParameter("@userId", userId));
+            await this._context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
+        }
+
     }
 }

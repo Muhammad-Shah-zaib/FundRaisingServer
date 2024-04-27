@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FundRaisingServer.Services;
 
-public class PasswordService (FundRaisingDbContext context, IUserRepository userRepo, IArgon2Hasher argon2Hasher): IPasswordRepository
+public class PasswordService(FundRaisingDbContext context, IUserRepository userRepo, IArgon2Hasher argon2Hasher) : IPasswordRepository
 {
     // DIs
     private readonly FundRaisingDbContext _context = context;
@@ -30,7 +30,7 @@ public class PasswordService (FundRaisingDbContext context, IUserRepository user
 
             // Extra check if the user exist or not
             if (user == null) return false;
-            
+
             // Hashing the password
             var password = Encoding.UTF8.GetBytes(inputPassword);
             var salt = Encoding.UTF8.GetBytes(RandomSaltGenerator.GenerateSalt(512 / 8));
@@ -60,14 +60,14 @@ public class PasswordService (FundRaisingDbContext context, IUserRepository user
             // get the user to get the id and then delete the user password from the table
             var user = await this._userRepo.GetUserByEmailAsync(email);
             if (user == null) return false;
-        
+
             // deleting the user password from the table
             const string query = "DELETE Passwords WHERE User_ID = @UserId";
 
-            await this._context.Database.ExecuteSqlRawAsync(query, 
+            await this._context.Database.ExecuteSqlRawAsync(query,
                 new SqlParameter("@UserId", user.UserId));
             await this._context.SaveChangesAsync();
-        
+
             return true;
         }
         catch (Exception e)
@@ -75,6 +75,22 @@ public class PasswordService (FundRaisingDbContext context, IUserRepository user
             Console.WriteLine(e);
             return false;
         }
-        
+    }
+
+    public async Task<bool> DeleteUserPasswordByUserIdAsync(int userId)
+    {
+        try
+        {
+            const string deleteQuery = "DELETE Passwords WHERE User_ID = @UserId";
+            await this._context.Database.ExecuteSqlRawAsync(deleteQuery,
+                new SqlParameter("@userId", userId));
+            await this._context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            return false;
+        }
     }
 }

@@ -39,4 +39,14 @@ public interface IUserRepository
      * refer to IUserAuthLogRepository
      */
     Task<bool> UpdateUserAsync(UserUpdateRequestDto userUpdateRequestDto);
+
+    /*
+     * The method below will delete the user
+     * tuple in the DB ...
+     * Before calling this function you need
+     * to clear its passwords and userTypes
+     * and logs, since they are associated with
+     * the userId
+     */
+    Task<bool> DeleteUserAsync(int userId);
 }

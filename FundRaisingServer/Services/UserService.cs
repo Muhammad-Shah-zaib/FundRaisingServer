@@ -161,7 +161,7 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
     
     /*
      * The method to update the user
-     * in the DB along...
+     * tuple in the DB ...
      * you also need to update the log
      * of update... it is not implemented
      * in this method you can do this 
@@ -183,6 +183,29 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
             await this._context.SaveChangesAsync();
             return true;
         
+        
+    }
+    
+    /*
+     * The method below will delete the user
+     * tuple in the DB ...
+     */
+    public async Task<bool> DeleteUserAsync(int userId)
+    {
+        try
+        {
+            const string query = "DELETE Users WHERE User_ID = @userId";
+
+            await this._context.Database.ExecuteSqlRawAsync(query, 
+                new SqlParameter("@userId", userId));
+            await this._context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
         
     }
 }

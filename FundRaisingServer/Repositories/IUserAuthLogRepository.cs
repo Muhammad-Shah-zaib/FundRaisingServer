@@ -10,5 +10,11 @@ public interface IUserAuthLogRepository
      * then it update the logs instead of
      * inserting new log
      */
-    public Task<bool> SaveUserAuthLogAsync(string email, UserEventType eventTypeEnum);
+    Task<bool> SaveUserAuthLogAsync(string email, UserEventType eventTypeEnum);
+
+    /*
+    * The method below deletes the userAuthLog
+    * tupel, by using the provided userId
+    */
+    Task<bool> DeleteUserAuthLogAsync(int userId);
 }

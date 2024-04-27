@@ -5,12 +5,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FundRaisingServer.Services;
 
-public class UserTypeService(FundRaisingDbContext context, IUserRepository userRepo): IUserTypeRepository
+public class UserTypeService(FundRaisingDbContext context, IUserRepository userRepo) : IUserTypeRepository
 {
     // DIs
     private readonly FundRaisingDbContext _context = context;
     private readonly IUserRepository _userRepo = userRepo;
-    
+
     /*
      * The method below will first take the user
      * from th DB via userRepo and then use the
@@ -22,14 +22,37 @@ public class UserTypeService(FundRaisingDbContext context, IUserRepository userR
         try
         {
             // getting the user 
-            var user =  await this._userRepo.GetUserByEmailAsync(userTypeDto.Email);
+            var user = await this._userRepo.GetUserByEmailAsync(userTypeDto.Email);
             if (user == null) throw new Exception("No user find with the provided email");
-            
+
             // saving the user
             const string query = $"INSERT INTO User_Type VALUES (@UserType, @UserId)";
             await this._context.Database.ExecuteSqlRawAsync(query,
                 new SqlParameter("@UserType", userTypeDto.UserType),
                 new SqlParameter("@UserId", user.UserId));
+            await this._context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    /*
+    * The method below will delete 
+    * the user type from the DB
+    * by using the userId
+    */
+    public async Task<bool> DeleteUserTypeByUserIdAsync(int userId)
+    {
+        try
+        {
+            // deleting the user type from the table
+            const string query = "DELETE User_Type WHERE User_ID = @UserId";
+            await this._context.Database.ExecuteSqlRawAsync(query,
+                new SqlParameter("@UserId", userId));
             await this._context.SaveChangesAsync();
             return true;
         }
