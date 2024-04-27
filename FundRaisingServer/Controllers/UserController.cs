@@ -45,9 +45,18 @@ public class UserController (IUserRepository userRepo, IUserAuthLogRepository us
          */
         if (!ModelState.IsValid) return BadRequest("Please provide all the user details");
         
-        // now we need to update the user
         try
         {
+            // now we need to check either the given userId exist in Db
+            // and the email corresponds to that userId or not?
+            var user = await this._userRepo.GetUserByIdAsync(userUpdateRequestDto.UserId);
+            if (user == null) return BadRequest($"There is no user with id {userUpdateRequestDto.UserId}");
+            
+            /*
+             * First we will update the tuple of users
+             * so that we can have the updated Email,
+             * and from the updated email we can add the logs
+             */
             await this._userRepo.UpdateUserAsync(userUpdateRequestDto);
             // now update the logs
             await this._userAuthLogRepo.SaveUserAuthLogAsync(userUpdateRequestDto.Email, UserEventType.Last_Update);

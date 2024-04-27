@@ -15,6 +15,9 @@ public interface IUserRepository
     
     // this method will get the user by email from db
     Task<User?> GetUserByEmailAsync(string email);
+    
+    // method below will get the user by id from db
+    Task<User?> GetUserByIdAsync(int id);
 
     /*
      * This method will check Either

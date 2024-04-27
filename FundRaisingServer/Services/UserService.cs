@@ -83,6 +83,15 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
         return user; // this return user or null
     }
 
+    public async Task<User?> GetUserByIdAsync(int id)
+    {
+        const string query = "SELECT * FROM Users WHERE User_ID = @userId";
+
+        return await this._context.Users.FromSqlRaw(query,
+            new SqlParameter("@userId", id))
+            .SingleOrDefaultAsync();
+    }
+
     public async Task<bool> DeleteUserByEmailAsync(string email)
     {
         try
