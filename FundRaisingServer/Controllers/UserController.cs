@@ -95,7 +95,7 @@ public class UserController(IUserRepository userRepo, IUserAuthLogRepository use
         // DELETING THE USER TYPE
         if (!await this._userTypeRepo.DeleteUserTypeByUserIdAsync(userId)) return StatusCode(500, "Internal server error");
         // DELETING THE USER
-        // if (!await this._userRepo.DeleteUserAsync(userId)) return StatusCode(500, "Internal server error");
+        if (!await this._userRepo.DeleteUserAsync(userId)) return StatusCode(500, "Internal server error");
         return Ok();
 
     }
