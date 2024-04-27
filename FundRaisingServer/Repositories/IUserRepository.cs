@@ -23,6 +23,17 @@ public interface IUserRepository
      */
     Task<bool> CheckUserAsync(string email, string password);
 
+    /*
+     * Method below will return all the users
+     * including their logs
+     */
     Task<IEnumerable<UserResponseDto>> GetAllUsersAsync();
 
+    /*
+     * This method update the user,
+     * but you also have to update the logs
+     * for upadting the logs you can
+     * refer to IUserAuthLogRepository
+     */
+    Task<bool> UpdateUserAsync(UserUpdateRequestDto userUpdateRequestDto);
 }

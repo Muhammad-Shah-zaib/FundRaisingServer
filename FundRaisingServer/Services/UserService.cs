@@ -149,4 +149,31 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
             .ToListAsync();
 
     }
+    
+    /*
+     * The method to update the user
+     * in the DB along...
+     * you also need to update the log
+     * of update... it is not implemented
+     * in this method you can do this 
+     * in controller
+     */
+    public async Task<bool> UpdateUserAsync(UserUpdateRequestDto userUpdateRequestDto)
+    {
+            const string query =
+                "UPDATE Users SET First_Name = @First_Name, Last_Name = @Last_Name, Email = @Email WHERE User_ID = @UserId";
+            
+            // now we will update the user
+            await this._context.Database.ExecuteSqlRawAsync(query,
+                new SqlParameter("@First_Name", userUpdateRequestDto.FirstName),
+                new SqlParameter("@Last_Name", userUpdateRequestDto.LastName),
+                new SqlParameter("@Email", userUpdateRequestDto.Email),
+                new SqlParameter("@UserId", userUpdateRequestDto.UserId));
+            
+            // now we need to add a log for updating the user
+            await this._context.SaveChangesAsync();
+            return true;
+        
+        
+    }
 }

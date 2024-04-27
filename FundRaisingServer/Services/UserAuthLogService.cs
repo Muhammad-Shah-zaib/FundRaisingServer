@@ -33,6 +33,7 @@ public class UserAuthLogService(FundRaisingDbContext context, IUserRepository us
             
             // we will check if the user has already a log of UserEventType or not
             // this can only happened in case of already existing Last_Login event
+            // and also for Last_Update
             const string checkAuthLogQuery = "SELECT * FROM [dbo].[User_Auth_Log] WHERE [User_ID] = @UserId AND [Event_Type] = @EventType";
             var userAuthLog = await this._context.UserAuthLogs.FromSqlRaw(checkAuthLogQuery,
                 new SqlParameter("@UserId", userAuthLogDto.UserId),
@@ -65,7 +66,7 @@ public class UserAuthLogService(FundRaisingDbContext context, IUserRepository us
 
     }
 
-    public async Task<bool> UpdateUserAuthLogAsync(int userId, UserEventType eventTypeEnum)
+    private async Task<bool> UpdateUserAuthLogAsync(int userId, UserEventType eventTypeEnum)
     {
         const string updateQuery =
             "UPDATE User_Auth_log SET Event_Timestamp = DEFAULT  WHERE User_ID = @userId AND Event_Type = @eventType";
