@@ -20,4 +20,6 @@ public interface IUserTypeRepository
     */
 
     Task<bool> DeleteUserTypeByUserIdAsync(int userId);
+
+    Task<bool> AddUserTypeByUserIdAsync(int userId, string userType);
 }

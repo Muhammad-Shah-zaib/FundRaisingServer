@@ -22,8 +22,7 @@ public class UserTypeService(FundRaisingDbContext context, IUserRepository userR
         try
         {
             // getting the user 
-            var user = await this._userRepo.GetUserByEmailAsync(userTypeDto.Email);
-            if (user == null) throw new Exception("No user find with the provided email");
+            var user = await this._userRepo.GetUserByEmailAsync(userTypeDto.Email) ?? throw new Exception("No user find with the provided email");
 
             // saving the user
             const string query = $"INSERT INTO User_Type VALUES (@UserType, @UserId)";
@@ -52,6 +51,25 @@ public class UserTypeService(FundRaisingDbContext context, IUserRepository userR
             // deleting the user type from the table
             const string query = "DELETE User_Type WHERE User_ID = @UserId";
             await this._context.Database.ExecuteSqlRawAsync(query,
+                new SqlParameter("@UserId", userId));
+            await this._context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task<bool> AddUserTypeByUserIdAsync(int userId, string userType)
+    {
+        try
+        {
+            // adding the user type from the table
+            const string query = "INSERT INTO User_Type VALUES (@UserType, @UserId)";
+            await this._context.Database.ExecuteSqlRawAsync(query,
+                new SqlParameter("@UserType", userType),
                 new SqlParameter("@UserId", userId));
             await this._context.SaveChangesAsync();
             return true;

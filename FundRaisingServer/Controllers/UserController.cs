@@ -40,7 +40,6 @@ public class UserController(IUserRepository userRepo, IUserAuthLogRepository use
     public async Task<ActionResult<UserResponseDto>> UpdateUser(UserUpdateRequestDto userUpdateRequestDto)
     {
         /*
-         * we need to check the model state
          * since there are already DataAnnotations
          * for the UpdateUserRequestDto so no need to
          * manually check the Model State
@@ -59,11 +58,20 @@ public class UserController(IUserRepository userRepo, IUserAuthLogRepository use
              * so that we can have the updated Email,
              * and from the updated email we can add the logs
              */
-            await this._userRepo.UpdateUserAsync(userUpdateRequestDto);
+            if (!await this._userRepo.UpdateUserAsync(userUpdateRequestDto)) return StatusCode(500, "Internal server error");
             // now update the logs
-            await this._userAuthLogRepo.SaveUserAuthLogAsync(userUpdateRequestDto.Email, UserEventType.Last_Update);
-
-            return Ok();
+            if (!await this._userAuthLogRepo.SaveUserAuthLogAsync(userUpdateRequestDto.Email, UserEventType.Last_Update)) return StatusCode(500, "Internal server error");
+            // now we can update the userType
+            // since it is possible th euser dont want to update the userType
+            // so we need to check it first
+            if (userUpdateRequestDto.UserType != null) await this._userTypeRepo.AddUserTypeByUserIdAsync(user.UserId, userUpdateRequestDto.UserType);
+            return Ok(new UserResponseDto()
+            {
+                FirstName = userUpdateRequestDto.FirstName,
+                LastName = userUpdateRequestDto.LastName,
+                Email = userUpdateRequestDto.Email,
+                UserId = user.UserId,
+            });
         }
         catch (Exception e)
         {
