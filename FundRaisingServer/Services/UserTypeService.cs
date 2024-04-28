@@ -62,12 +62,12 @@ public class UserTypeService(FundRaisingDbContext context, IUserRepository userR
         }
     }
 
-    public async Task<bool> AddUserTypeByUserIdAsync(int userId, string userType)
+    public async Task<bool> UpdateUserTypeByUserIdAsync(int userId, string userType)
     {
         try
         {
             // adding the user type from the table
-            const string query = "INSERT INTO User_Type VALUES (@UserType, @UserId)";
+            const string query = "UPDATE User_Type SET Type = @UserType WHERE User_ID = @UserId";
             await this._context.Database.ExecuteSqlRawAsync(query,
                 new SqlParameter("@UserType", userType),
                 new SqlParameter("@UserId", userId));

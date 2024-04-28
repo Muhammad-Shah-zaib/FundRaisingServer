@@ -145,6 +145,7 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
                 FirstName = u.FirstName!,
                 LastName = u.LastName!,
                 Email = u.Email,
+                UserType = u.UserTypes.Where(ut => ut.UserId == u.UserId).Select(ut => ut.Type).SingleOrDefault() ?? null!,
                 UserAuthLogsList = u.UserAuthLogs
                     .Where(l => l.UserId == u.UserId)
                     .Select(l => new UserAuthLogsResponseDto()
@@ -158,7 +159,7 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
             .ToListAsync();
 
     }
-    
+
     /*
      * The method to update the user
      * tuple in the DB ...
@@ -169,23 +170,23 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
      */
     public async Task<bool> UpdateUserAsync(UserUpdateRequestDto userUpdateRequestDto)
     {
-            const string query =
-                "UPDATE Users SET First_Name = @First_Name, Last_Name = @Last_Name, Email = @Email WHERE User_ID = @UserId";
-            
-            // now we will update the user
-            await this._context.Database.ExecuteSqlRawAsync(query,
-                new SqlParameter("@First_Name", userUpdateRequestDto.FirstName),
-                new SqlParameter("@Last_Name", userUpdateRequestDto.LastName),
-                new SqlParameter("@Email", userUpdateRequestDto.Email),
-                new SqlParameter("@UserId", userUpdateRequestDto.UserId));
-            
-            // now we need to add a log for updating the user
-            await this._context.SaveChangesAsync();
-            return true;
-        
-        
+        const string query =
+            "UPDATE Users SET First_Name = @First_Name, Last_Name = @Last_Name, Email = @Email WHERE User_ID = @UserId";
+
+        // now we will update the user
+        await this._context.Database.ExecuteSqlRawAsync(query,
+            new SqlParameter("@First_Name", userUpdateRequestDto.FirstName),
+            new SqlParameter("@Last_Name", userUpdateRequestDto.LastName),
+            new SqlParameter("@Email", userUpdateRequestDto.Email),
+            new SqlParameter("@UserId", userUpdateRequestDto.UserId));
+
+        // now we need to add a log for updating the user
+        await this._context.SaveChangesAsync();
+        return true;
+
+
     }
-    
+
     /*
      * The method below will delete the user
      * tuple in the DB ...
@@ -196,7 +197,7 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
         {
             const string query = "DELETE Users WHERE User_ID = @userId";
 
-            await this._context.Database.ExecuteSqlRawAsync(query, 
+            await this._context.Database.ExecuteSqlRawAsync(query,
                 new SqlParameter("@userId", userId));
             await this._context.SaveChangesAsync();
             return true;
@@ -206,6 +207,6 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
             Console.WriteLine(e);
             throw;
         }
-        
+
     }
 }

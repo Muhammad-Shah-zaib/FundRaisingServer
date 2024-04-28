@@ -21,5 +21,5 @@ public interface IUserTypeRepository
 
     Task<bool> DeleteUserTypeByUserIdAsync(int userId);
 
-    Task<bool> AddUserTypeByUserIdAsync(int userId, string userType);
+    Task<bool> UpdateUserTypeByUserIdAsync(int userId, string userType);
 }

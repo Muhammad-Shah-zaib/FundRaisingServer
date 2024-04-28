@@ -64,7 +64,7 @@ public class UserController(IUserRepository userRepo, IUserAuthLogRepository use
             // now we can update the userType
             // since it is possible th euser dont want to update the userType
             // so we need to check it first
-            if (userUpdateRequestDto.UserType != null) await this._userTypeRepo.AddUserTypeByUserIdAsync(user.UserId, userUpdateRequestDto.UserType);
+            if (userUpdateRequestDto.UserType != null) await this._userTypeRepo.UpdateUserTypeByUserIdAsync(user.UserId, userUpdateRequestDto.UserType);
             return Ok(new UserResponseDto()
             {
                 FirstName = userUpdateRequestDto.FirstName,
