@@ -27,7 +27,7 @@ public class UserController(IUserRepository userRepo, IUserAuthLogRepository use
     }
 
     [HttpPut]
-    [Route("UpdateUser")]
+    [Route("UpdateUser/{userId:int}")]
 
     /*
      * the api below is going to
@@ -37,7 +37,7 @@ public class UserController(IUserRepository userRepo, IUserAuthLogRepository use
      * and return the single updated User
      * with updated logs
      */
-    public async Task<ActionResult<UserResponseDto>> UpdateUser(UserUpdateRequestDto userUpdateRequestDto)
+    public async Task<ActionResult<UserResponseDto>> UpdateUser([FromRoute] int userId, UserUpdateRequestDto userUpdateRequestDto)
     {
         /*
          * since there are already DataAnnotations
@@ -50,9 +50,14 @@ public class UserController(IUserRepository userRepo, IUserAuthLogRepository use
         {
             // now we need to check either the given userId exist in Db
             // and the email corresponds to that userId or not?
-            var user = await this._userRepo.GetUserByIdAsync(userUpdateRequestDto.UserId);
-            if (user == null) return BadRequest($"There is no user with id {userUpdateRequestDto.UserId}");
+            var user = await this._userRepo.GetUserByIdAsync(userId);
+            if (user == null) return BadRequest($"There is no user with id {userId}");
 
+            // now we need to check if the new email is already updated or not
+            var userByEmail = await this._userRepo.GetUserByEmailAsync(userUpdateRequestDto.Email);
+            if (userByEmail != null && userByEmail.UserId != userId) return StatusCode(409, "Email already exist.");
+
+            userUpdateRequestDto.UserId = userId;
             /*
              * First we will update the tuple of users
              * so that we can have the updated Email,
@@ -64,7 +69,10 @@ public class UserController(IUserRepository userRepo, IUserAuthLogRepository use
             // now we can update the userType
             // since it is possible th euser dont want to update the userType
             // so we need to check it first
-            if (userUpdateRequestDto.UserType != null) await this._userTypeRepo.UpdateUserTypeByUserIdAsync(user.UserId, userUpdateRequestDto.UserType);
+            if (userUpdateRequestDto.UserType != null)
+                if (!await this._userTypeRepo.UpdateUserTypeByUserIdAsync(user.UserId, userUpdateRequestDto.UserType)) return StatusCode(500, "Internal server error");
+
+
             return Ok(new UserResponseDto()
             {
                 FirstName = userUpdateRequestDto.FirstName,
