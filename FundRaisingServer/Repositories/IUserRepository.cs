@@ -3,19 +3,19 @@ using FundRaisingServer.Models.DTOs.UserAuth;
 namespace FundRaisingServer.Repositories;
 
 public interface IUserRepository
-{ 
+{
     // this method will save the user in the db
     Task<bool> SaveUserAsync(RegistrationRequestDto user);
-    
+
     // this method will save the user Password in db
     Task<bool> SaveUserPasswordAsync(string email, string password);
-    
+
     // this method will delete the user from the db
     Task<bool> DeleteUserByEmailAsync(string email);
-    
+
     // this method will get the user by email from db
     Task<User?> GetUserByEmailAsync(string email);
-    
+
     // method below will get the user by id from db
     Task<User?> GetUserByIdAsync(int id);
 
@@ -46,7 +46,7 @@ public interface IUserRepository
      * Before calling this function you need
      * to clear its passwords and userTypes
      * and logs, since they are associated with
-     * the userId
+     * the UserCnic
      */
-    Task<bool> DeleteUserAsync(int userId);
+    Task<bool> DeleteUserAsync(int UserCnic);
 }

@@ -37,11 +37,11 @@ public class PasswordService(FundRaisingDbContext context, IUserRepository userR
             var hashedPassword = this._argon2Hasher.HashPassword(password: password, salt: salt);
 
             // saving User Password
-            const string query = "INSERT INTO dbo.Passwords VALUES (@HashedPassword, @Salt, @UserId);";
+            const string query = "INSERT INTO dbo.Passwords VALUES (@HashedPassword, @Salt, @UserCnic);";
             await this._context.Database.ExecuteSqlRawAsync(query,
                 new SqlParameter("@HashedPassword", Convert.ToBase64String(hashedPassword)),
                 new SqlParameter("@Salt", Convert.ToBase64String(salt)),
-                new SqlParameter("@UserId", user.UserId));
+                new SqlParameter("@UserCnic", user.UserCnic));
             await this._context.SaveChangesAsync();
 
             return true;
@@ -62,10 +62,10 @@ public class PasswordService(FundRaisingDbContext context, IUserRepository userR
             if (user == null) return false;
 
             // deleting the user password from the table
-            const string query = "DELETE Passwords WHERE User_ID = @UserId";
+            const string query = "DELETE Passwords WHERE User_CNIC = @UserCnic";
 
             await this._context.Database.ExecuteSqlRawAsync(query,
-                new SqlParameter("@UserId", user.UserId));
+                new SqlParameter("@UserCnic", user.UserCnic));
             await this._context.SaveChangesAsync();
 
             return true;
@@ -77,13 +77,13 @@ public class PasswordService(FundRaisingDbContext context, IUserRepository userR
         }
     }
 
-    public async Task<bool> DeleteUserPasswordByUserIdAsync(int userId)
+    public async Task<bool> DeleteUserPasswordByUserCnicAsync(int UserCnic)
     {
         try
         {
-            const string deleteQuery = "DELETE Passwords WHERE User_ID = @UserId";
+            const string deleteQuery = "DELETE Passwords WHERE User_CNIC = @UserCnic";
             await this._context.Database.ExecuteSqlRawAsync(deleteQuery,
-                new SqlParameter("@userId", userId));
+                new SqlParameter("@UserCnic", UserCnic));
             await this._context.SaveChangesAsync();
             return true;
         }

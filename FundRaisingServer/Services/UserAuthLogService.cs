@@ -28,32 +28,32 @@ public class UserAuthLogService(FundRaisingDbContext context, IUserRepository us
             {
                 EventType = eventTypeEnum,
                 EventTimestamp = DateTime.UtcNow,
-                UserId = user.UserId
+                UserId = user.UserCnic
             };
 
             // we will check if the user has already a log of UserEventType or not
             // this can only happened in case of already existing Last_Login event
             // and also for Last_Update
-            const string checkAuthLogQuery = "SELECT * FROM [dbo].[User_Auth_Log] WHERE [User_ID] = @UserId AND [Event_Type] = @EventType";
+            const string checkAuthLogQuery = "SELECT * FROM [dbo].[User_Auth_Log] WHERE [User_CNIC] = @UserCnic AND [Event_Type] = @EventType";
             var userAuthLog = await this._context.UserAuthLogs.FromSqlRaw(checkAuthLogQuery,
-                new SqlParameter("@UserId", userAuthLogDto.UserId),
+                new SqlParameter("@UserCnic", userAuthLogDto.UserId),
                 new SqlParameter("@EventType", userAuthLogDto.EventType.GetDisplayName()))
                 .SingleOrDefaultAsync();
 
             if (userAuthLog == null)
             {
                 // while saving the event_type since it is an enum so we need to convert its value into string
-                const string insertQuery = "INSERT INTO User_Auth_Log VALUES (@EventType, @EventTimestamp, @UserId) ";
+                const string insertQuery = "INSERT INTO User_Auth_Log VALUES (@EventType, @EventTimestamp, @UserCnic) ";
                 await this._context.Database.ExecuteSqlRawAsync(insertQuery,
                     new SqlParameter("@EventType", userAuthLogDto.EventType.GetDisplayName()),
                     new SqlParameter("@EventTimestamp", userAuthLogDto.EventTimestamp),
-                    new SqlParameter("@UserId", userAuthLogDto.UserId));
+                    new SqlParameter("@UserCnic", userAuthLogDto.UserId));
                 await this._context.SaveChangesAsync();
                 return true;
             }
             // updating the log if the log already exist
             else
-                await this.UpdateUserAuthLogAsync(user.UserId, eventTypeEnum);
+                await this.UpdateUserAuthLogAsync(user.UserCnic, eventTypeEnum);
 
             return true;
 
@@ -66,24 +66,24 @@ public class UserAuthLogService(FundRaisingDbContext context, IUserRepository us
 
     }
 
-    private async Task<bool> UpdateUserAuthLogAsync(int userId, UserEventType eventTypeEnum)
+    private async Task<bool> UpdateUserAuthLogAsync(int UserCnic, UserEventType eventTypeEnum)
     {
         const string updateQuery =
-            "UPDATE User_Auth_log SET Event_Timestamp = DEFAULT  WHERE User_ID = @userId AND Event_Type = @eventType";
+            "UPDATE User_Auth_log SET Event_Timestamp = DEFAULT  WHERE User_CNIC = @UserCnic AND Event_Type = @eventType";
 
         await this._context.Database.ExecuteSqlRawAsync(updateQuery,
-            new SqlParameter("@userId", userId),
+            new SqlParameter("@UserCnic", UserCnic),
             new SqlParameter("@eventType", eventTypeEnum.GetDisplayName()));
         await this._context.SaveChangesAsync();
         return true;
     }
 
-    public async Task<bool> DeleteUserAuthLogAsync(int userId)
+    public async Task<bool> DeleteUserAuthLogAsync(int UserCnic)
     {
         try
         {
-            const string deleteQuery = "DELETE User_Auth_Log WHERE User_ID = @userId";
-            await this._context.Database.ExecuteSqlRawAsync(deleteQuery, new SqlParameter("@userId", userId));
+            const string deleteQuery = "DELETE User_Auth_Log WHERE User_CNIC = @UserCnic";
+            await this._context.Database.ExecuteSqlRawAsync(deleteQuery, new SqlParameter("@UserCnic", UserCnic));
             await this._context.SaveChangesAsync();
             return true;
         }

@@ -27,7 +27,7 @@ public class UserController(IUserRepository userRepo, IUserAuthLogRepository use
     }
 
     [HttpPut]
-    [Route("UpdateUser/{userId:int}")]
+    [Route("UpdateUser/{userCnic:int}")]
 
     /*
      * the api below is going to
@@ -37,7 +37,7 @@ public class UserController(IUserRepository userRepo, IUserAuthLogRepository use
      * and return the single updated User
      * with updated logs
      */
-    public async Task<ActionResult<UserResponseDto>> UpdateUser([FromRoute] int userId, UserUpdateRequestDto userUpdateRequestDto)
+    public async Task<ActionResult<UserResponseDto>> UpdateUser([FromRoute] int userCnic, UserUpdateRequestDto userUpdateRequestDto)
     {
         /*
          * since there are already DataAnnotations
@@ -48,16 +48,16 @@ public class UserController(IUserRepository userRepo, IUserAuthLogRepository use
 
         try
         {
-            // now we need to check either the given userId exist in Db
-            // and the email corresponds to that userId or not?
-            var user = await this._userRepo.GetUserByIdAsync(userId);
-            if (user == null) return BadRequest($"There is no user with id {userId}");
+            // now we need to check either the given userCnic exist in Db
+            // and the email corresponds to that userCnic or not?
+            var user = await this._userRepo.GetUserByIdAsync(userCnic);
+            if (user == null) return BadRequest($"There is no user with id {userCnic}");
 
             // now we need to check if the new email is already updated or not
             var userByEmail = await this._userRepo.GetUserByEmailAsync(userUpdateRequestDto.Email);
-            if (userByEmail != null && userByEmail.UserId != userId) return StatusCode(409, "Email already exist.");
+            if (userByEmail != null && userByEmail.UserCnic != userCnic) return StatusCode(409, "Email already exist.");
 
-            userUpdateRequestDto.UserId = userId;
+            userUpdateRequestDto.UserId = userCnic;
             /*
              * First we will update the tuple of users
              * so that we can have the updated Email,
@@ -70,7 +70,7 @@ public class UserController(IUserRepository userRepo, IUserAuthLogRepository use
             // since it is possible th euser dont want to update the userType
             // so we need to check it first
             if (userUpdateRequestDto.UserType != null)
-                if (!await this._userTypeRepo.UpdateUserTypeByUserIdAsync(user.UserId, userUpdateRequestDto.UserType)) return StatusCode(500, "Internal server error");
+                if (!await this._userTypeRepo.UpdateUserTypeByUserCnicAsync(user.UserCnic, userUpdateRequestDto.UserType)) return StatusCode(500, "Internal server error");
 
 
             return Ok(new UserResponseDto()
@@ -78,7 +78,7 @@ public class UserController(IUserRepository userRepo, IUserAuthLogRepository use
                 FirstName = userUpdateRequestDto.FirstName,
                 LastName = userUpdateRequestDto.LastName,
                 Email = userUpdateRequestDto.Email,
-                UserId = user.UserId,
+                UserId = user.UserCnic,
             });
         }
         catch (Exception e)
@@ -96,22 +96,22 @@ public class UserController(IUserRepository userRepo, IUserAuthLogRepository use
      * the user provided to delete
      */
     [HttpDelete]
-    [Route("DeleteUser/{userId:int}")]
-    public async Task<ActionResult<UserResponseDto>> DeleteUser([FromRoute] int userId)
+    [Route("DeleteUser/{userCnic:int}")]
+    public async Task<ActionResult<UserResponseDto>> DeleteUser([FromRoute] int userCnic)
     {
-        // first we will check if the user with userId exist or not
-        var user = await this._userRepo.GetUserByIdAsync(id: userId);
+        // first we will check if the user with UserCnic exist or not
+        var user = await this._userRepo.GetUserByIdAsync(id: userCnic);
         if (user == null) return BadRequest("User not Found");
 
         // since, now we know the user exist, so we can delete the user
         // DELETING THE LOGS
-        if (!await this._userAuthLogRepo.DeleteUserAuthLogAsync(userId)) return StatusCode(500, "Internal server error");
+        if (!await this._userAuthLogRepo.DeleteUserAuthLogAsync(userCnic)) return StatusCode(500, "Internal server error");
         // DELETING THE PASSWORD
-        if (!await this._passwordRepo.DeleteUserPasswordByUserIdAsync(userId)) return StatusCode(500, "Internal server error");
+        if (!await this._passwordRepo.DeleteUserPasswordByUserCnicAsync(userCnic)) return StatusCode(500, "Internal server error");
         // DELETING THE USER TYPE
-        if (!await this._userTypeRepo.DeleteUserTypeByUserIdAsync(userId)) return StatusCode(500, "Internal server error");
+        if (!await this._userTypeRepo.DeleteUserTypeByUserCnicAsync(userCnic)) return StatusCode(500, "Internal server error");
         // DELETING THE USER
-        if (!await this._userRepo.DeleteUserAsync(userId)) return StatusCode(500, "Internal server error");
+        if (!await this._userRepo.DeleteUserAsync(userCnic)) return StatusCode(500, "Internal server error");
         return Ok();
 
     }

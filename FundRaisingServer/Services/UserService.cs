@@ -59,7 +59,7 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
             // saving User Password
             var query = "INSERT INTO dbo.Passwords " +
                         "VALUES " +
-                        $"('{Convert.ToBase64String(hashedPassword)}', '{Convert.ToBase64String(salt)}', {user.UserId});";
+                        $"('{Convert.ToBase64String(hashedPassword)}', '{Convert.ToBase64String(salt)}', {user.UserCnic});";
             await this._context.Database.ExecuteSqlRawAsync(query);
             await this._context.SaveChangesAsync();
 
@@ -85,7 +85,7 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
 
     public async Task<User?> GetUserByIdAsync(int id)
     {
-        const string query = "SELECT * FROM Users WHERE User_ID = @userId";
+        const string query = "SELECT * FROM Users WHERE User_CNIC = @userId";
 
         return await this._context.Users.FromSqlRaw(query,
             new SqlParameter("@userId", id))
@@ -121,8 +121,8 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
         if (userFromDb == null) return false;
 
         // getting the passwords
-        const string query = $"SELECT * FROM Passwords WHERE User_ID = @UserId";
-        var userPassword = await this._context.Passwords.FromSqlRaw(query, new SqlParameter("@UserId", userFromDb.UserId)).FirstOrDefaultAsync();
+        const string query = $"SELECT * FROM Passwords WHERE User_CNIC = @UserCnic";
+        var userPassword = await this._context.Passwords.FromSqlRaw(query, new SqlParameter("@UserCnic", userFromDb.UserCnic)).FirstOrDefaultAsync();
 
         // checking the password
         var result = this._argon2Hasher.VerifyHash(
@@ -141,13 +141,13 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
         return await this._context.Users.FromSqlRaw(query)
             .Select(u => new UserResponseDto()
             {
-                UserId = u.UserId,
+                UserId = u.UserCnic,
                 FirstName = u.FirstName!,
                 LastName = u.LastName!,
                 Email = u.Email,
-                UserType = u.UserTypes.Where(ut => ut.UserId == u.UserId).Select(ut => ut.Type).SingleOrDefault() ?? null!,
+                UserType = u.UserTypes.Where(ut => ut.UserId == u.UserCnic).Select(ut => ut.Type).SingleOrDefault() ?? null!,
                 UserAuthLogsList = u.UserAuthLogs
-                    .Where(l => l.UserId == u.UserId)
+                    .Where(l => l.UserId == u.UserCnic)
                     .Select(l => new UserAuthLogsResponseDto()
                     {
                         EventType = l.EventType,
@@ -171,7 +171,7 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
     public async Task<bool> UpdateUserAsync(UserUpdateRequestDto userUpdateRequestDto)
     {
         const string query =
-            "UPDATE Users SET First_Name = @First_Name, Last_Name = @Last_Name, Email = @Email WHERE User_ID = @UserId";
+            "UPDATE Users SET First_Name = @First_Name, Last_Name = @Last_Name, Email = @Email WHERE User_CNIC = @UserId";
 
         // now we will update the user
         await this._context.Database.ExecuteSqlRawAsync(query,
@@ -195,7 +195,7 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
     {
         try
         {
-            const string query = "DELETE Users WHERE User_ID = @userId";
+            const string query = "DELETE Users WHERE User_CNIC = @userId";
 
             await this._context.Database.ExecuteSqlRawAsync(query,
                 new SqlParameter("@userId", userId));

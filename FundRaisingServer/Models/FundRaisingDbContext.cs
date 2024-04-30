@@ -17,7 +17,9 @@ public partial class FundRaisingDbContext : DbContext
 
     public virtual DbSet<Case> Cases { get; set; }
 
-    public virtual DbSet<CasesFund> CasesFunds { get; set; }
+    public virtual DbSet<CaseTransaction> CaseTransactions { get; set; }
+
+    public virtual DbSet<Donator> Donators { get; set; }
 
     public virtual DbSet<Password> Passwords { get; set; }
 
@@ -41,43 +43,73 @@ public partial class FundRaisingDbContext : DbContext
                 .HasMaxLength(20)
                 .IsUnicode(false)
                 .HasColumnName("Cause_Name");
-            entity.Property(e => e.CreatedDate)
-                .HasColumnType("datetime")
-                .HasColumnName("Created_Date");
+            entity.Property(e => e.CollectedAmount)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("Collected_Amount");
             entity.Property(e => e.Description)
                 .HasMaxLength(1000)
                 .IsUnicode(false);
+            entity.Property(e => e.RemainingAmount)
+                .HasComputedColumnSql("([Collected_Amount]-[Required_Amount])", false)
+                .HasColumnType("decimal(11, 2)")
+                .HasColumnName("Remaining_amount");
+            entity.Property(e => e.RequiredAmount)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("Required_Amount");
             entity.Property(e => e.Title)
                 .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.VerifiedStatus).HasColumnName("Verified_Status");
         });
 
-        modelBuilder.Entity<CasesFund>(entity =>
+        modelBuilder.Entity<CaseTransaction>(entity =>
         {
-            entity.HasKey(e => e.CaseFundId).HasName("PK__Cases_Fu__A919421DA7E03F01");
+            entity.HasKey(e => e.CaseTransactionId).HasName("PK__Case_Tra__1D0AE26140EDC83D");
 
-            entity.ToTable("Cases_Funds");
+            entity.ToTable("Case_Transactions");
 
-            entity.HasIndex(e => e.CaseId, "UQ__Cases_Fu__A8FC9C6FB368CE6F").IsUnique();
-
-            entity.Property(e => e.CaseFundId).HasColumnName("caseFund_id");
-            entity.Property(e => e.CaseId).HasColumnName("case_Id");
-            entity.Property(e => e.CollectedAmount)
+            entity.Property(e => e.CaseTransactionId).HasColumnName("Case_Transaction_ID");
+            entity.Property(e => e.CaseId).HasColumnName("Case_ID");
+            entity.Property(e => e.TransactionLog)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("Transaction_Log");
+            entity.Property(e => e.TrasactionAmount)
                 .HasColumnType("decimal(10, 2)")
-                .HasColumnName("collected_amount");
-            entity.Property(e => e.RemainingAmount)
-                .HasComputedColumnSql("([Required_amount]-[collected_amount])", true)
-                .HasColumnType("decimal(11, 2)")
-                .HasColumnName("Remaining_amount");
-            entity.Property(e => e.RequiredAmount)
-                .HasColumnType("decimal(10, 2)")
-                .HasColumnName("Required_amount");
+                .HasColumnName("Trasaction_Amount");
+            entity.Property(e => e.UserId).HasColumnName("User_ID");
 
-            entity.HasOne(d => d.Case).WithOne(p => p.CasesFund)
-                .HasForeignKey<CasesFund>(d => d.CaseId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Cases_Fun__case___1332DBDC");
+            entity.HasOne(d => d.Case).WithMany(p => p.CaseTransactions)
+                .HasForeignKey(d => d.CaseId)
+                .HasConstraintName("FK__Case_Tran__Case___367C1819");
+
+            entity.HasOne(d => d.User).WithMany(p => p.CaseTransactions)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK__Case_Tran__User___3587F3E0");
+        });
+
+        modelBuilder.Entity<Donator>(entity =>
+        {
+            entity.HasKey(e => e.Cnic).HasName("PK__Donators__AA570FD50742B62B");
+
+            entity.Property(e => e.Cnic)
+                .ValueGeneratedNever()
+                .HasColumnName("CNIC");
+            entity.Property(e => e.Email)
+                .HasMaxLength(128)
+                .IsUnicode(false);
+            entity.Property(e => e.FirstName)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("First_Name");
+            entity.Property(e => e.LastName)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Last_Name");
+            entity.Property(e => e.PhoneNo)
+                .HasMaxLength(13)
+                .IsUnicode(false)
+                .HasColumnName("Phone_No");
         });
 
         modelBuilder.Entity<Password>(entity =>
@@ -102,11 +134,11 @@ public partial class FundRaisingDbContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__Users__206D91903BFBC3E9");
+            entity.HasKey(e => e.UserCnic).HasName("PK__Users__206D91903BFBC3E9");
 
             entity.HasIndex(e => e.Email, "UQ__Users__A9D105345BEACED2").IsUnique();
 
-            entity.Property(e => e.UserId).HasColumnName("User_ID");
+            entity.Property(e => e.UserCnic).HasColumnName("User_CNIC");
             entity.Property(e => e.Email)
                 .HasMaxLength(150)
                 .IsUnicode(false);

@@ -25,10 +25,10 @@ public class UserTypeService(FundRaisingDbContext context, IUserRepository userR
             var user = await this._userRepo.GetUserByEmailAsync(userTypeDto.Email) ?? throw new Exception("No user find with the provided email");
 
             // saving the user
-            const string query = $"INSERT INTO User_Type VALUES (@UserType, @UserId)";
+            const string query = $"INSERT INTO User_Type VALUES (@UserType, @UserCnic)";
             await this._context.Database.ExecuteSqlRawAsync(query,
                 new SqlParameter("@UserType", userTypeDto.UserType),
-                new SqlParameter("@UserId", user.UserId));
+                new SqlParameter("@UserCnic", user.UserCnic));
             await this._context.SaveChangesAsync();
             return true;
         }
@@ -42,16 +42,16 @@ public class UserTypeService(FundRaisingDbContext context, IUserRepository userR
     /*
     * The method below will delete 
     * the user type from the DB
-    * by using the userId
+    * by using the UserCnic
     */
-    public async Task<bool> DeleteUserTypeByUserIdAsync(int userId)
+    public async Task<bool> DeleteUserTypeByUserCnicAsync(int UserCnic)
     {
         try
         {
             // deleting the user type from the table
-            const string query = "DELETE User_Type WHERE User_ID = @UserId";
+            const string query = "DELETE User_Type WHERE User_CNIC = @UserCnic";
             await this._context.Database.ExecuteSqlRawAsync(query,
-                new SqlParameter("@UserId", userId));
+                new SqlParameter("@UserCnic", UserCnic));
             await this._context.SaveChangesAsync();
             return true;
         }
@@ -62,15 +62,15 @@ public class UserTypeService(FundRaisingDbContext context, IUserRepository userR
         }
     }
 
-    public async Task<bool> UpdateUserTypeByUserIdAsync(int userId, string userType)
+    public async Task<bool> UpdateUserTypeByUserCnicAsync(int UserCnic, string userType)
     {
         try
         {
             // adding the user type from the table
-            const string query = "UPDATE User_Type SET Type = @UserType WHERE User_ID = @UserId";
+            const string query = "UPDATE User_Type SET Type = @UserType WHERE User_CNIC = @UserCnic";
             await this._context.Database.ExecuteSqlRawAsync(query,
                 new SqlParameter("@UserType", userType),
-                new SqlParameter("@UserId", userId));
+                new SqlParameter("@UserCnic", UserCnic));
             await this._context.SaveChangesAsync();
             return true;
         }

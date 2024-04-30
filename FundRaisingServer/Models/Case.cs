@@ -11,11 +11,15 @@ public partial class Case
 
     public string Description { get; set; } = null!;
 
-    public DateTime CreatedDate { get; set; }
-
     public string CauseName { get; set; } = null!;
 
     public bool VerifiedStatus { get; set; }
 
-    public virtual CasesFund? CasesFund { get; set; }
+    public decimal CollectedAmount { get; set; }
+
+    public decimal RequiredAmount { get; set; }
+
+    public decimal? RemainingAmount { get; set; }
+
+    public virtual ICollection<CaseTransaction> CaseTransactions { get; set; } = new List<CaseTransaction>();
 }

@@ -5,7 +5,7 @@ namespace FundRaisingServer.Models;
 
 public partial class User
 {
-    public int UserId { get; set; }
+    public int UserCnic { get; set; }
 
     public string? FirstName { get; set; }
 

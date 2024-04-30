@@ -13,13 +13,13 @@ public interface IUserTypeRepository
     /*
     * The method below will 
     * delete the user type from the DB
-    * by using the userId
+    * by using the UserCnic
     
     * There is no need to verify the user Exist or not
-    * as the userId is already a foreign key in the User_Type
+    * as the UserCnic is already a foreign key in the User_Type
     */
 
-    Task<bool> DeleteUserTypeByUserIdAsync(int userId);
+    Task<bool> DeleteUserTypeByUserCnicAsync(int UserCnic);
 
-    Task<bool> UpdateUserTypeByUserIdAsync(int userId, string userType);
+    Task<bool> UpdateUserTypeByUserCnicAsync(int UserCnic, string userType);
 }

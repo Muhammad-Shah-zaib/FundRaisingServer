@@ -29,7 +29,6 @@ namespace FundRaisingServer.Services
                         CaseId = c.CaseId,
                         Title = c.Title,
                         Description = c.Description,
-                        CreatedDate = c.CreatedDate,
                         VerifiedStatus = c.VerifiedStatus,
                         CauseName = c.CauseName ?? string.Empty,
                     })
@@ -63,7 +62,6 @@ namespace FundRaisingServer.Services
                     CaseId = singleCase.CaseId,
                     Title = singleCase.Title,
                     Description = singleCase.Description,
-                    CreatedDate = singleCase.CreatedDate,
                     VerifiedStatus = singleCase.VerifiedStatus,
                     CauseName = singleCase.CauseName ?? string.Empty,
                 };
@@ -83,13 +81,12 @@ namespace FundRaisingServer.Services
             try
             {
                 // Inserting the new case into the db via query method
-                const string query = "INSERT INTO Cases VALUES (@Title, @Description, @Created_Date, @CauseName, @VerifiedStatus)";
+                const string query = "INSERT INTO Cases VALUES (@Title, @Description, @CauseName, @VerifiedStatus)";
 
                 // providing the params for protecting against Sql Injection
                 await _context.Database.ExecuteSqlRawAsync(query,
                     new SqlParameter("@Title", caseRequestDto.Title),
                     new SqlParameter("@Description", caseRequestDto.Description),
-                    new SqlParameter("@Created_Date", DateTime.UtcNow),
                     new SqlParameter("@CauseName", caseRequestDto.CauseName),
                     new SqlParameter("@VerifiedStatus", caseRequestDto.VerifiedStatus));
                 // saving the changes
@@ -177,7 +174,6 @@ namespace FundRaisingServer.Services
                 CaseId = id,
                 Title = existingCase.Title,
                 Description = existingCase.Description,
-                CreatedDate = existingCase.CreatedDate,
                 CauseName = existingCase.CauseName,
                 VerifiedStatus = true
             };
@@ -205,7 +201,6 @@ namespace FundRaisingServer.Services
                 CaseId = id,
                 Title = existingCase.Title,
                 Description = existingCase.Description,
-                CreatedDate = existingCase.CreatedDate,
                 CauseName = existingCase.CauseName,
                 VerifiedStatus = false
             };

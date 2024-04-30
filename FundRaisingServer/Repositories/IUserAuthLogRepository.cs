@@ -14,7 +14,7 @@ public interface IUserAuthLogRepository
 
     /*
     * The method below deletes the userAuthLog
-    * tupel, by using the provided userId
+    * tupel, by using the provided UserCnic
     */
-    Task<bool> DeleteUserAuthLogAsync(int userId);
+    Task<bool> DeleteUserAuthLogAsync(int UserCnic);
 }
