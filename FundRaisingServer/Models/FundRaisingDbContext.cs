@@ -17,6 +17,8 @@ public partial class FundRaisingDbContext : DbContext
 
     public virtual DbSet<Case> Cases { get; set; }
 
+    public virtual DbSet<CaseLog> CaseLogs { get; set; }
+
     public virtual DbSet<CaseTransaction> CaseTransactions { get; set; }
 
     public virtual DbSet<Donator> Donators { get; set; }
@@ -60,6 +62,29 @@ public partial class FundRaisingDbContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.VerifiedStatus).HasColumnName("Verified_Status");
+        });
+
+        modelBuilder.Entity<CaseLog>(entity =>
+        {
+            entity.HasKey(e => e.CaseLogId).HasName("PK__Case_Log__D5158BB1B3202808");
+
+            entity.ToTable("Case_Log");
+
+            entity.Property(e => e.CaseLogId).HasColumnName("Case_Log_ID");
+            entity.Property(e => e.CaseId).HasColumnName("Case_ID");
+            entity.Property(e => e.LogTimestamp)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("Log_Timestamp");
+            entity.Property(e => e.LogType)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasColumnName("Log_Type");
+
+            entity.HasOne(d => d.Case).WithMany(p => p.CaseLogs)
+                .HasForeignKey(d => d.CaseId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Case_Log__Case_I__3B40CD36");
         });
 
         modelBuilder.Entity<CaseTransaction>(entity =>
