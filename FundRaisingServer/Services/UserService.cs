@@ -135,10 +135,10 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
 
     public async Task<IEnumerable<UserResponseDto>> GetAllUsersAsync()
     {
-        const string query = "SELECT u.[User_ID], u.[First_Name], u.[Last_Name] AS Last_Name, u.[Email], [l].[Log_ID], [l].[Event_Type], [l].[Event_TimeStamp] FROM Users u JOIN [dbo].[User_Auth_Log] l ON [u].[User_ID] = [l].[User_ID]";
+        // const string query = "SELECT u.[UserType], u.[First_Name], u.[Last_Name] AS Last_Name, u.[Email], [l].[Log_ID], [l].[Event_Type], [l].[Event_TimeStamp] FROM Users u JOIN [dbo].[User_Auth_Log] l ON [u].[User_ID] = [l].[User_ID]";
 
 
-        return await this._context.Users.FromSqlRaw(query)
+        return await this._context.Users
             .Select(u => new UserResponseDto()
             {
                 UserId = u.UserCnic,

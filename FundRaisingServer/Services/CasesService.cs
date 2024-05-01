@@ -3,6 +3,7 @@ using FundRaisingServer.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using FundRaisingServer.Models.DTOs.CaseLog;
 
 namespace FundRaisingServer.Services
 {
@@ -20,10 +21,7 @@ namespace FundRaisingServer.Services
         {
             try
             {
-                // using query to fetch the DATA FROM THE DB
-                const string query = "SELECT * FROM Cases";
-
-                var cases = await this._context.Cases.FromSqlRaw(query)
+                var cases = await this._context.Cases
                     .Select(c => new CaseResponseDto()
                     {
                         CaseId = c.CaseId,
@@ -31,6 +29,14 @@ namespace FundRaisingServer.Services
                         Description = c.Description,
                         VerifiedStatus = c.VerifiedStatus,
                         CauseName = c.CauseName ?? string.Empty,
+                        CaseLogs = c.CaseLogs
+                            .Where(l => l.CaseId == c.CaseId)
+                            .Select(l => new CaseLogDto()
+                            {
+                                LogType = l.LogType,
+                                LogTimestamp = l.LogTimestamp
+                            })
+                            .ToList()
                     })
                     .ToListAsync();
 
