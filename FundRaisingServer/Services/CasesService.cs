@@ -34,12 +34,12 @@ namespace FundRaisingServer.Services
                             .Select(l => new CaseLogDto()
                             {
                                 LogType = l.LogType,
-                                LogTimestamp = l.LogTimestamp
+                                LogDate = l.LogTimestamp.Date.ToString("yyyy-MM-dd"),
+                                LogTime = l.LogTimestamp.TimeOfDay
                             })
                             .ToList()
                     })
                     .ToListAsync();
-
                 return cases;
             }
             catch (Exception e)
@@ -49,7 +49,7 @@ namespace FundRaisingServer.Services
             }
         }
 
-        // the methid to get a single case from the DB
+        // the method to get a single case from the DB
         public async Task<CaseResponseDto?> GetCaseByIdAsync([FromBody] int id) // Add this method
         {
             try

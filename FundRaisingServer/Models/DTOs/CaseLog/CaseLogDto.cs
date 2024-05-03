@@ -21,5 +21,6 @@ public class CaseLogDto
 {
     // use Enum to get the LogType instead of hardcoding the logType
     public string LogType { get; set; } = string.Empty;
-    public DateTime LogTimestamp { get; set; }
+    public string LogDate { get; set; }
+    public TimeSpan LogTime { get; set; }
 }

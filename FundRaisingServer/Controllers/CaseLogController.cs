@@ -11,12 +11,18 @@ public class CaseLogController (CaseLogService caseLogService): ControllerBase
     private readonly CaseLogService _caseLogService = caseLogService;
     
     [HttpPost]
-    [Route("AddCaseLog")]
-    public async Task<IActionResult> AddNewCaseLogAsync([FromBody] NewCaseLogRequestDto caseLogRequestDto)
+    [Route("AddOrUpdateCaseLog")]
+    public async Task<IActionResult> AddOrUpdateCaseLog([FromBody] AddCaseLogRequestDto caseLogRequestDto)
     {
         try
         {
-            var result = await _caseLogService.AddNewCaseLogAsync(caseLogRequestDto);
+            /*
+             * we can call the addOrUpdate method
+             * that will update the case logs
+             * if it exists, or it will create
+             * a new one if it doesn't exist
+             */ 
+            var result = await _caseLogService.AddOrUpdateCaseLogAsync(caseLogRequestDto);
             return Ok(result);
         }
         catch (Exception e)
