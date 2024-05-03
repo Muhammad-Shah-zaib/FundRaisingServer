@@ -1,3 +1,4 @@
+using System.Reflection;
 using FundRaisingServer.Models.DTOs;
 using FundRaisingServer.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -7,14 +8,10 @@ using FundRaisingServer.Models.DTOs.CaseLog;
 
 namespace FundRaisingServer.Services
 {
-    public class CasesService : ICasesRepository
+    public class CasesService(FundRaisingDbContext context, ICaseLogRepository caseLogRepository) : ICasesRepository
     {
-        private readonly FundRaisingDbContext _context;
-
-        public CasesService(FundRaisingDbContext context)
-        {
-            _context = context;
-        }
+        private readonly FundRaisingDbContext _context = context;
+        private readonly ICaseLogRepository _caseLogRepository = caseLogRepository;
 
         // the method to get all the cases from the DB
         public async Task<IEnumerable<CaseResponseDto>> GetAllCasesAsync()
@@ -55,10 +52,7 @@ namespace FundRaisingServer.Services
             try
             {
                 // using the query method ot get the cases from the DB
-                const string query = "SELECT * FROM Cases WHERE Case_ID = @CaseId";
-                var singleCase = await _context.Cases.FromSqlRaw(query,
-                        new SqlParameter("@CaseId", id))
-                    .SingleOrDefaultAsync(c => c.CaseId == id);
+                var singleCase = await _context.Cases.FindAsync(id);
 
                 if (singleCase == null) return null; // Case not found
 
@@ -86,18 +80,33 @@ namespace FundRaisingServer.Services
         {
             try
             {
-                // Inserting the new case into the db via query method
-                const string query = "INSERT INTO Cases VALUES (@Title, @Description, @CauseName, @VerifiedStatus)";
+                var newCase = new Case()
+                {
+                    Title = caseRequestDto.Title,
+                    Description = caseRequestDto.Description,
+                    CauseName = caseRequestDto.CauseName,
+                    VerifiedStatus = caseRequestDto.VerifiedStatus,
+                };
 
-                // providing the params for protecting against Sql Injection
-                await _context.Database.ExecuteSqlRawAsync(query,
-                    new SqlParameter("@Title", caseRequestDto.Title),
-                    new SqlParameter("@Description", caseRequestDto.Description),
-                    new SqlParameter("@CauseName", caseRequestDto.CauseName),
-                    new SqlParameter("@VerifiedStatus", caseRequestDto.VerifiedStatus));
-                // saving the changes
+                // adding the case to the DB
+                await this._context.Cases.AddAsync(newCase);
                 await _context.SaveChangesAsync();
+
+                // Fetch the case from the database to get its unique identifier
+                var caseId = await this._context.Cases
+                    .OrderByDescending(c => c.CaseId)
+                    .Select(c => c.CaseId)
+                    .FirstOrDefaultAsync();
+                
+                // now we need to add the CREATED_DATE log
+                await this._caseLogRepository.AddOrUpdateCaseLogAsync(new AddCaseLogRequestDto()
+                {
+                    CaseId = caseId,
+                    LogType = "CREATED_DATE"
+                });
+                await this._context.SaveChangesAsync();
             }
+
             catch (Exception e)
             {
                 Console.WriteLine(e);
@@ -110,12 +119,14 @@ namespace FundRaisingServer.Services
         {
             try
             {
-                // query for deleting the case
-                const string query = "DELETE FROM Cases WHERE Case_ID = @CaseId";
-
-                // Checking for the Case
-                var existingCase = await this.GetCaseByIdAsync(id) ?? throw new ArgumentException("Case not found");
-
+                // at first, we need to delete the logs
+                const string deleteQuery = "DELETE Case_Log WHERE Case_ID = @CaseId";
+                await this._context.Database.ExecuteSqlRawAsync(deleteQuery,
+                    new SqlParameter("@CaseId", id));
+                
+                // now we can delete the case
+                const string query = "DELETE Cases WHERE Case_ID = @CaseId";
+                
                 /* 
                 * executing the query using the Parameterized Query 
                 * for protection against Sql Injection
@@ -137,19 +148,22 @@ namespace FundRaisingServer.Services
             try
             {
                 // query for updating the case
-                const string query = "UPDATE [Cases] SET [Title] = @Title, [Description] = @Description, [Cause_Name] = @CauseName, [Verified_Status] = @VerifiedStatus WHERE Case_ID = @CaseId";
 
                 // Checking for the Case
                 var existingCase = await _context.Cases.FindAsync(id) ?? throw new ArgumentException("Case not found");
 
-                // executing the query using the Parameterized Query 
-                // for protection against Sql Injection
-                await _context.Database.ExecuteSqlRawAsync(query,
-                    new SqlParameter("@Title", caseDto.Title),
-                        new SqlParameter("@Description", caseDto.Description),
-                        new SqlParameter("@CauseName", caseDto.CauseName),
-                        new SqlParameter("@VerifiedStatus", caseDto.VerifiedStatus),
-                        new SqlParameter("@CaseId", id));
+                // now we need to add the case
+                existingCase.Title = caseDto.Title;
+                existingCase.Description = caseDto.Description;
+                existingCase.CauseName = caseDto.CauseName;
+                existingCase.VerifiedStatus = caseDto.VerifiedStatus;
+                
+                // now adding the Updated case Log
+                await this._caseLogRepository.AddOrUpdateCaseLogAsync(new AddCaseLogRequestDto()
+                {
+                    CaseId = id,
+                    LogType = "UPDATED_DATE"
+                });
                 await _context.SaveChangesAsync();
             }
             catch (Exception e)
@@ -162,8 +176,6 @@ namespace FundRaisingServer.Services
         // the method to verify a case in the DB
         public async Task<CaseResponseDto> VerifyCaseAsync(int id)
         {
-            // WE NEED TO HANDLE teh edge CASES... WILL DO THIS LATER
-
             // get the case from db
             var existingCase = await _context.Cases.FindAsync(id) ?? throw new ArgumentException("Case not found");
 
@@ -186,7 +198,7 @@ namespace FundRaisingServer.Services
 
         }
 
-        // the method to unverify a case in the DB
+        // the method to un-verify a case in the DB
         public async Task<CaseResponseDto> UnVerifyCaseAsync(int id)
         {
             // WE NEED TO HANDLE teh edge CASES... Will DO THIS LATER

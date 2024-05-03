@@ -1,4 +1,5 @@
 using FundRaisingServer.Models.DTOs.CaseLog;
+using FundRaisingServer.Repositories;
 using FundRaisingServer.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,9 +7,9 @@ namespace FundRaisingServer.Controllers;
 
 [ApiController]
 [Route("/[controller]")]
-public class CaseLogController (CaseLogService caseLogService): ControllerBase
+public class CaseLogController (ICaseLogRepository caseLogService): ControllerBase
 {
-    private readonly CaseLogService _caseLogService = caseLogService;
+    private readonly ICaseLogRepository _caseLogService = caseLogService;
     
     [HttpPost]
     [Route("AddOrUpdateCaseLog")]
