@@ -1,10 +1,10 @@
-using System.Reflection;
 using FundRaisingServer.Models.DTOs;
 using FundRaisingServer.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using FundRaisingServer.Models.DTOs.CaseLog;
+using FundRaisingServer.Models.DTOs.Case;
 
 namespace FundRaisingServer.Services
 {
@@ -26,6 +26,9 @@ namespace FundRaisingServer.Services
                         Description = c.Description,
                         VerifiedStatus = c.VerifiedStatus,
                         CauseName = c.CauseName ?? string.Empty,
+                        CollectedDonations = c.CollectedAmount,
+                        RequiredDonations = c.RequiredAmount,
+                        RemainingDonations = c.RemainingAmount ?? 0,
                         CaseLogs = c.CaseLogs
                             .Where(l => l.CaseId == c.CaseId)
                             .Select(l => new CaseLogDto()
@@ -36,6 +39,8 @@ namespace FundRaisingServer.Services
                             })
                             .ToList()
                     })
+                    .OrderBy(c => c.CaseId)
+                    .OrderByDescending(c => c.VerifiedStatus)
                     .ToListAsync();
                 return cases;
             }
@@ -86,6 +91,8 @@ namespace FundRaisingServer.Services
                     Description = caseRequestDto.Description,
                     CauseName = caseRequestDto.CauseName,
                     VerifiedStatus = caseRequestDto.VerifiedStatus,
+                    RequiredAmount = caseRequestDto.RequiredDonations,
+                    CollectedAmount = 0 // initially there will be no amount collected
                 };
 
                 // adding the case to the DB
@@ -143,12 +150,10 @@ namespace FundRaisingServer.Services
         }
 
         // the method to update a case in the DB
-        public async Task UpdateCaseAsync(int id, CaseDto caseDto)
+        public async Task UpdateCaseAsync(int id, UpdateCaseRequestDto caseDto)
         {
             try
             {
-                // query for updating the case
-
                 // Checking for the Case
                 var existingCase = await _context.Cases.FindAsync(id) ?? throw new ArgumentException("Case not found");
 
@@ -157,6 +162,7 @@ namespace FundRaisingServer.Services
                 existingCase.Description = caseDto.Description;
                 existingCase.CauseName = caseDto.CauseName;
                 existingCase.VerifiedStatus = caseDto.VerifiedStatus;
+                existingCase.RequiredAmount = caseDto.RequiredDonations;
                 
                 // now adding the Updated case Log
                 await this._caseLogRepository.AddOrUpdateCaseLogAsync(new AddCaseLogRequestDto()

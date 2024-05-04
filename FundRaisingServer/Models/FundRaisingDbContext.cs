@@ -52,9 +52,9 @@ public partial class FundRaisingDbContext : DbContext
                 .HasMaxLength(1000)
                 .IsUnicode(false);
             entity.Property(e => e.RemainingAmount)
-                .HasComputedColumnSql("([Collected_Amount]-[Required_Amount])", false)
+                .HasComputedColumnSql("([Required_Amount]-[Collected_Amount])", false)
                 .HasColumnType("decimal(11, 2)")
-                .HasColumnName("Remaining_amount");
+                .HasColumnName("Remaining_Amount");
             entity.Property(e => e.RequiredAmount)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("Required_Amount");
@@ -95,21 +95,21 @@ public partial class FundRaisingDbContext : DbContext
 
             entity.Property(e => e.CaseTransactionId).HasColumnName("Case_Transaction_ID");
             entity.Property(e => e.CaseId).HasColumnName("Case_ID");
+            entity.Property(e => e.DonorCnic).HasColumnName("Donor_CNIC");
+            entity.Property(e => e.TransactionAmount)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("Transaction_Amount");
             entity.Property(e => e.TransactionLog)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
                 .HasColumnName("Transaction_Log");
-            entity.Property(e => e.TrasactionAmount)
-                .HasColumnType("decimal(10, 2)")
-                .HasColumnName("Trasaction_Amount");
-            entity.Property(e => e.UserId).HasColumnName("User_ID");
 
             entity.HasOne(d => d.Case).WithMany(p => p.CaseTransactions)
                 .HasForeignKey(d => d.CaseId)
                 .HasConstraintName("FK__Case_Tran__Case___367C1819");
 
-            entity.HasOne(d => d.User).WithMany(p => p.CaseTransactions)
-                .HasForeignKey(d => d.UserId)
+            entity.HasOne(d => d.DonorCnicNavigation).WithMany(p => p.CaseTransactions)
+                .HasForeignKey(d => d.DonorCnic)
                 .HasConstraintName("FK__Case_Tran__User___3587F3E0");
         });
 
@@ -120,21 +120,9 @@ public partial class FundRaisingDbContext : DbContext
             entity.Property(e => e.Cnic)
                 .ValueGeneratedNever()
                 .HasColumnName("CNIC");
-            entity.Property(e => e.Email)
-                .HasMaxLength(128)
-                .IsUnicode(false);
-            entity.Property(e => e.FirstName)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("First_Name");
-            entity.Property(e => e.LastName)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("Last_Name");
-            entity.Property(e => e.PhoneNo)
-                .HasMaxLength(13)
-                .IsUnicode(false)
-                .HasColumnName("Phone_No");
+            entity.Property(e => e.TotalDonation)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("Total_Donation");
         });
 
         modelBuilder.Entity<Password>(entity =>
@@ -192,10 +180,10 @@ public partial class FundRaisingDbContext : DbContext
                 .HasMaxLength(20)
                 .IsUnicode(false)
                 .HasColumnName("Event_Type");
-            entity.Property(e => e.UserId).HasColumnName("User_ID");
+            entity.Property(e => e.UserCnic).HasColumnName("User_CNIC");
 
-            entity.HasOne(d => d.User).WithMany(p => p.UserAuthLogs)
-                .HasForeignKey(d => d.UserId)
+            entity.HasOne(d => d.UserCnicNavigation).WithMany(p => p.UserAuthLogs)
+                .HasForeignKey(d => d.UserCnic)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__User_Auth__User___6C190EBB");
         });
@@ -210,10 +198,10 @@ public partial class FundRaisingDbContext : DbContext
             entity.Property(e => e.Type)
                 .HasMaxLength(50)
                 .IsUnicode(false);
-            entity.Property(e => e.UserId).HasColumnName("User_ID");
+            entity.Property(e => e.UserCnic).HasColumnName("User_CNIC");
 
-            entity.HasOne(d => d.User).WithMany(p => p.UserTypes)
-                .HasForeignKey(d => d.UserId)
+            entity.HasOne(d => d.UserCnicNavigation).WithMany(p => p.UserTypes)
+                .HasForeignKey(d => d.UserCnic)
                 .HasConstraintName("FK__User_Type__User___6383C8BA");
         });
 

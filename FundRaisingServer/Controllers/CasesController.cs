@@ -1,4 +1,5 @@
 using FundRaisingServer.Models.DTOs;
+using FundRaisingServer.Models.DTOs.Case;
 using FundRaisingServer.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
@@ -34,7 +35,7 @@ public class CasesController(ICasesRepository casesRepo) : ControllerBase
 
     [HttpPut]
     [Route("UpdateCase/{id}")]
-    public async Task<IActionResult> UpdateCase([FromRoute] int id, [FromBody] CaseDto caseDto)
+    public async Task<IActionResult> UpdateCase([FromRoute] int id, [FromBody] UpdateCaseRequestDto updateCaseRequestDto)
     {
         // Perform validation if needed
         if (!ModelState.IsValid)
@@ -48,7 +49,7 @@ public class CasesController(ICasesRepository casesRepo) : ControllerBase
             return NotFound();
         }
 
-        await _casesRepo.UpdateCaseAsync(id, caseDto);
+        await _casesRepo.UpdateCaseAsync(id, updateCaseRequestDto);
         return Ok();
     }
 

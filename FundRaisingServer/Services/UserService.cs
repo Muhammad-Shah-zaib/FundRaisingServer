@@ -135,9 +135,6 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
 
     public async Task<IEnumerable<UserResponseDto>> GetAllUsersAsync()
     {
-        // const string query = "SELECT u.[UserType], u.[First_Name], u.[Last_Name] AS Last_Name, u.[Email], [l].[Log_ID], [l].[Event_Type], [l].[Event_TimeStamp] FROM Users u JOIN [dbo].[User_Auth_Log] l ON [u].[User_ID] = [l].[User_ID]";
-
-
         return await this._context.Users
             .Select(u => new UserResponseDto()
             {
@@ -145,9 +142,9 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
                 FirstName = u.FirstName!,
                 LastName = u.LastName!,
                 Email = u.Email,
-                UserType = u.UserTypes.Where(ut => ut.UserId == u.UserCnic).Select(ut => ut.Type).SingleOrDefault() ?? null!,
+                UserType = u.UserTypes.Where(ut => ut.UserCnic == u.UserCnic).Select(ut => ut.Type).SingleOrDefault() ?? null!,
                 UserAuthLogsList = u.UserAuthLogs
-                    .Where(l => l.UserId == u.UserCnic)
+                    .Where(l => l.UserCnic == u.UserCnic)
                     .Select(l => new UserAuthLogsResponseDto()
                     {
                         EventType = l.EventType,

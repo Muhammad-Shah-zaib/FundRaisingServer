@@ -1,4 +1,5 @@
 using FundRaisingServer.Models.DTOs;
+using FundRaisingServer.Models.DTOs.Case;
 
 namespace FundRaisingServer.Repositories
 {
@@ -60,7 +61,7 @@ namespace FundRaisingServer.Repositories
         ? @param caseDto: The case to be updated
 
         */
-        Task UpdateCaseAsync(int id, CaseDto caseDto);
+        Task UpdateCaseAsync(int id, UpdateCaseRequestDto caseDto);
 
         /*
         

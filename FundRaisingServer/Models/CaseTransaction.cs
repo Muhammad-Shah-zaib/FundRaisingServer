@@ -9,13 +9,13 @@ public partial class CaseTransaction
 
     public DateTime TransactionLog { get; set; }
 
-    public decimal TrasactionAmount { get; set; }
+    public decimal TransactionAmount { get; set; }
 
     public int? CaseId { get; set; }
 
-    public int? UserId { get; set; }
+    public int? DonorCnic { get; set; }
 
     public virtual Case? Case { get; set; }
 
-    public virtual Donator? User { get; set; }
+    public virtual Donator? DonorCnicNavigation { get; set; }
 }
