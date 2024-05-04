@@ -29,7 +29,7 @@ public class UserTypeService(FundRaisingDbContext context, IUserRepository userR
             const string query = $"INSERT INTO User_Type VALUES (@UserType, @UserId)";
             await this._context.Database.ExecuteSqlRawAsync(query,
                 new SqlParameter("@UserType", userTypeDto.UserType),
-                new SqlParameter("@UserId", user.UserId));
+                new SqlParameter("@UserId", user.UserCnic));
             await this._context.SaveChangesAsync();
             return true;
         }

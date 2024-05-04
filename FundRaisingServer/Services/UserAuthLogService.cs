@@ -28,7 +28,7 @@ public class UserAuthLogService (FundRaisingDbContext context, IUserRepository u
             {
                 EventType = eventTypeEnum,
                 EventTimestamp = DateTime.UtcNow,
-                UserId = user.UserId
+                UserId= user.UserCnic
             };
             
             

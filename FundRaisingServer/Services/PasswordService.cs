@@ -41,7 +41,7 @@ public class PasswordService (FundRaisingDbContext context, IUserRepository user
             await this._context.Database.ExecuteSqlRawAsync(query,
                 new SqlParameter("@HashedPassword", Convert.ToBase64String(hashedPassword)),
                 new SqlParameter("@Salt", Convert.ToBase64String(salt)),
-                new SqlParameter("@UserId", user.UserId));
+                new SqlParameter("@UserId", user.UserCnic));
             await this._context.SaveChangesAsync();
 
             return true;
@@ -65,7 +65,7 @@ public class PasswordService (FundRaisingDbContext context, IUserRepository user
             const string query = "DELETE Passwords WHERE User_ID = @UserId";
 
             await this._context.Database.ExecuteSqlRawAsync(query, 
-                new SqlParameter("@UserId", user.UserId));
+                new SqlParameter("@UserId", user.UserCnic));
             await this._context.SaveChangesAsync();
         
             return true;

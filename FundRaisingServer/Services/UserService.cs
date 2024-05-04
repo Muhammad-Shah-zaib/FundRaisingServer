@@ -58,7 +58,7 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
             // saving User Password
             var query = "INSERT INTO dbo.Passwords " +
                         "VALUES " +
-                        $"('{Convert.ToBase64String(hashedPassword)}', '{Convert.ToBase64String(salt)}', {user.UserId});";
+                        $"('{Convert.ToBase64String(hashedPassword)}', '{Convert.ToBase64String(salt)}', {user.UserCnic});";
             await this._context.Database.ExecuteSqlRawAsync(query);
             await this._context.SaveChangesAsync();
 
@@ -112,7 +112,7 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
         
         // getting the passwords
         var query = $"SELECT * FROM Passwords WHERE User_ID = @UserId";
-        var userPassword = await this._context.Passwords.FromSqlRaw(query, new SqlParameter("@UserId", userFromDb.UserId)).FirstOrDefaultAsync();
+        var userPassword = await this._context.Passwords.FromSqlRaw(query, new SqlParameter("@UserId", userFromDb.UserCnic)).FirstOrDefaultAsync();
         
         // checking the password
         var result = this._argon2Hasher.VerifyHash(

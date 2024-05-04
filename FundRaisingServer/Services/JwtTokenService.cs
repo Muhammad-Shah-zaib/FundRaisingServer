@@ -31,7 +31,7 @@ public class JwtTokenService(IOptionsMonitor<JwtConfig> optionsMonitor): IJwtTok
         {
             Subject = new ClaimsIdentity(new[]
             {
-                new Claim("Id", user.UserId.ToString()),
+                new Claim("Id", user.UserCnic.ToString()),
                 new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
