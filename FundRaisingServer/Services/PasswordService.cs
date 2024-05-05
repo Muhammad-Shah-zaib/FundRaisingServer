@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FundRaisingServer.Services;
 
-public class PasswordService (FundRaisingDbContext context, IUserRepository userRepo, IArgon2Hasher argon2Hasher): IPasswordRepository
+public class PasswordService(FundRaisingDbContext context, IUserRepository userRepo, IArgon2Hasher argon2Hasher) : IPasswordRepository
 {
     // DIs
     private readonly FundRaisingDbContext _context = context;
@@ -30,18 +30,18 @@ public class PasswordService (FundRaisingDbContext context, IUserRepository user
 
             // Extra check if the user exist or not
             if (user == null) return false;
-            
+
             // Hashing the password
             var password = Encoding.UTF8.GetBytes(inputPassword);
             var salt = Encoding.UTF8.GetBytes(RandomSaltGenerator.GenerateSalt(512 / 8));
             var hashedPassword = this._argon2Hasher.HashPassword(password: password, salt: salt);
 
             // saving User Password
-            const string query = "INSERT INTO dbo.Passwords VALUES (@HashedPassword, @Salt, @UserId);";
+            const string query = "INSERT INTO dbo.Passwords VALUES (@HashedPassword, @Salt, @UserCnic);";
             await this._context.Database.ExecuteSqlRawAsync(query,
                 new SqlParameter("@HashedPassword", Convert.ToBase64String(hashedPassword)),
                 new SqlParameter("@Salt", Convert.ToBase64String(salt)),
-                new SqlParameter("@UserId", user.UserCnic));
+                new SqlParameter("@UserCnic", user.UserCnic));
             await this._context.SaveChangesAsync();
 
             return true;
@@ -60,14 +60,14 @@ public class PasswordService (FundRaisingDbContext context, IUserRepository user
             // get the user to get the id and then delete the user password from the table
             var user = await this._userRepo.GetUserByEmailAsync(email);
             if (user == null) return false;
-        
-            // deleting the user password from the table
-            const string query = "DELETE Passwords WHERE User_ID = @UserId";
 
-            await this._context.Database.ExecuteSqlRawAsync(query, 
-                new SqlParameter("@UserId", user.UserCnic));
+            // deleting the user password from the table
+            const string query = "DELETE Passwords WHERE User_CNIC = @UserCnic";
+
+            await this._context.Database.ExecuteSqlRawAsync(query,
+                new SqlParameter("@UserCnic", user.UserCnic));
             await this._context.SaveChangesAsync();
-        
+
             return true;
         }
         catch (Exception e)
@@ -75,6 +75,22 @@ public class PasswordService (FundRaisingDbContext context, IUserRepository user
             Console.WriteLine(e);
             return false;
         }
-        
+    }
+
+    public async Task<bool> DeleteUserPasswordByUserCnicAsync(int UserCnic)
+    {
+        try
+        {
+            const string deleteQuery = "DELETE Passwords WHERE User_CNIC = @UserCnic";
+            await this._context.Database.ExecuteSqlRawAsync(deleteQuery,
+                new SqlParameter("@UserCnic", UserCnic));
+            await this._context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            return false;
+        }
     }
 }

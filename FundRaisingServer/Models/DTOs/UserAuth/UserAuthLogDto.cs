@@ -8,8 +8,11 @@ public enum UserEventType
     [Display(Name = "Registration")]
     Registration,
     
-    [Display(Name = "Login")]
-    Login
+    [Display(Name = "Last_Login")]
+    Last_Login,
+    
+    [Display(Name = "Last_Updated")]
+    Last_Update
 }
 
 public class UserAuthLogDto

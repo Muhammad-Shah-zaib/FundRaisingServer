@@ -1,4 +1,5 @@
 using FundRaisingServer.Models.DTOs;
+using FundRaisingServer.Models.DTOs.Case;
 
 namespace FundRaisingServer.Repositories
 {
@@ -60,7 +61,7 @@ namespace FundRaisingServer.Repositories
         ? @param caseDto: The case to be updated
 
         */
-        Task UpdateCaseAsync(int id, CaseDto caseDto);
+        Task UpdateCaseAsync(int id, UpdateCaseRequestDto caseDto);
 
         /*
         
@@ -76,6 +77,31 @@ namespace FundRaisingServer.Repositories
         */
         Task DeleteCaseAsync(int id);
 
+        /*
+        * The method below verifies a case in the DB
+        * i.e it changed the verified status of the case to true
+        
+        * It uses the FromSqlRaw method to get
+        * all the cases from the DB and uses
+        * Parametrised query for protection 
+        * against the SQL INJECTION
+
+        ? @param id: The id of the case to be verified
+        */
         Task<CaseResponseDto> VerifyCaseAsync(int id);
+
+        /*
+        * The methid below verifies a case in the DB
+        * i.e: it changes the verified status of the case to false
+    
+        * It uses the FromSqlRaw method to get
+        * all the cases from the DB and uses
+        * Parametrised query for protection 
+        * against the SQL INJECTION
+        ? @param id: The id of the case to be verified
+        */
+        Task<CaseResponseDto> UnVerifyCaseAsync(int id);
+
+
     }
 }

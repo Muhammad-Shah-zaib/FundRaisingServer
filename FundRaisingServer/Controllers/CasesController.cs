@@ -1,4 +1,5 @@
 using FundRaisingServer.Models.DTOs;
+using FundRaisingServer.Models.DTOs.Case;
 using FundRaisingServer.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
@@ -37,15 +38,15 @@ namespace FundRaisingServer.Controllers
             return Ok();
         }
 
-    [HttpPut]
-    [Route("UpdateCase/{id}")]
-    public async Task<IActionResult> UpdateCase([FromRoute] int id, [FromBody] CaseDto caseDto)
-    {
-        // Perform validation if needed
-        if (!ModelState.IsValid)
+        [HttpPut]
+        [Route("UpdateCase/{id}")]
+        public async Task<IActionResult> UpdateCase([FromRoute] int id, [FromBody] UpdateCaseRequestDto updateCaseRequestDto)
         {
-            return BadRequest(ModelState);
-        }
+            // Perform validation if needed
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
             var existingCase = await _casesRepo.GetCaseByIdAsync(id);
             if (existingCase == null)
@@ -53,22 +54,22 @@ namespace FundRaisingServer.Controllers
                 return NotFound();
             }
 
-            await _casesRepo.UpdateCaseAsync(id, caseDto);
+            await _casesRepo.UpdateCaseAsync(id, updateCaseRequestDto);
             return Ok();
-    }
+        }
 
-    [HttpDelete]
-    [Route("DeleteCase/{id}")]
-    public async Task<ActionResult<Case>> DeleteCase([FromRoute] int id)
-    {
-        // we need to update this...
-        /*
-        * This will only work if the case has no case Fund
-        * tuple linkage i.e ( cases_funds table has foreign
-        * key constraint on the case_id column ) So we have
-        * delete the case fund tuple first before deleting
-        * the case.
-        */
+        [HttpDelete]
+        [Route("DeleteCase/{id}")]
+        public async Task<ActionResult<Case>> DeleteCase([FromRoute] int id)
+        {
+            // we need to update this...
+            /*
+            * This will only work if the case has no case Fund
+            * tuple linkage i.e ( cases_funds table has foreign
+            * key constraint on the case_id column ) So we have
+            * delete the case fund tuple first before deleting
+            * the case.
+            */
 
             // Delete the case fund tuple first
             // didnt implemented this yet
@@ -82,15 +83,39 @@ namespace FundRaisingServer.Controllers
             var existingCase = await _casesRepo.GetCaseByIdAsync(id);
             if (existingCase == null) return NotFound();
 
-        await _casesRepo.DeleteCaseAsync(id);
-        return Ok(existingCase);
-    }
+            await _casesRepo.DeleteCaseAsync(id);
+            return Ok(existingCase);
+        }
 
-    [HttpPut]
-    [Route("VerifyCase/{id}")]
-    public async Task<ActionResult<CaseResponseDto>> VerifyCase([FromRoute] int id)
-    {
-        return await this._casesRepo.VerifyCaseAsync(id);
-    }
+        [HttpPut]
+        [Route("VerifyCase/{id}")]
+        public async Task<ActionResult<CaseResponseDto>> VerifyCase([FromRoute] int id)
+        {
+            try
+            {
+                return await this._casesRepo.VerifyCaseAsync(id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
+        }
+
+        [HttpPut]
+        [Route("UnVerifyCase/{id}")]
+        public async Task<ActionResult<CaseResponseDto>> UnVerifyCase([FromRoute] int id)
+        {
+            // IMPLEMENTING THIS FUNCTION RN
+            try
+            {
+                return await this._casesRepo.UnVerifyCaseAsync(id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
+        }
     }
 }
