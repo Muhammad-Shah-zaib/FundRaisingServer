@@ -11,9 +11,11 @@ public partial class Case
 
     public string Description { get; set; } = null!;
 
+    public DateTime CreatedDate { get; set; }
+
     public string CauseName { get; set; } = null!;
 
-    public bool VerifiedStatus { get; set; }
+    public bool VerifiedCases { get; set; }
 
     public decimal CollectedAmount { get; set; }
 

@@ -75,5 +75,7 @@ namespace FundRaisingServer.Repositories
 
         */
         Task DeleteCaseAsync(int id);
+
+        Task<CaseResponseDto> VerifyCaseAsync(int id);
     }
 }
