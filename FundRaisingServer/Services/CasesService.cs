@@ -28,8 +28,7 @@ namespace FundRaisingServer.Services
                         CaseId = c.CaseId,
                         Title = c.Title,
                         Description = c.Description,
-                        CreatedDate = c.CreatedDate,
-                        VerifiedCases = c.VerifiedCases,
+                        VerifiedCases = c.VerifiedStatus,
                         CauseName = c.CauseName ?? string.Empty,
                     })
                     .ToListAsync();
@@ -61,8 +60,7 @@ namespace FundRaisingServer.Services
                     CaseId = singleCase.CaseId,
                     Title = singleCase.Title,
                     Description = singleCase.Description,
-                    CreatedDate = singleCase.CreatedDate,
-                    VerifiedCases = singleCase.VerifiedCases,
+                    VerifiedCases = singleCase.VerifiedStatus,
                     CauseName = singleCase.CauseName ?? string.Empty,
                 };
 
@@ -169,7 +167,6 @@ namespace FundRaisingServer.Services
                 CaseId = id,
                 Title = existingCase.Title,
                 Description = existingCase.Description,
-                CreatedDate = existingCase.CreatedDate,
                 CauseName = existingCase.CauseName,
                 VerifiedCases = true
             };

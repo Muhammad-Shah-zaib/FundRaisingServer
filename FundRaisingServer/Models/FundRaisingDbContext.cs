@@ -32,7 +32,7 @@ public partial class FundRaisingDbContext : DbContext
     public virtual DbSet<UserType> UserTypes { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Name=ConnectionStrings:FundRaisingDb");
+        => optionsBuilder.UseSqlServer("Name=FundRaisingDb");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -61,7 +61,7 @@ public partial class FundRaisingDbContext : DbContext
             entity.Property(e => e.Title)
                 .HasMaxLength(50)
                 .IsUnicode(false);
-            entity.Property(e => e.VerifiedCases).HasColumnName("Verified_Cases");
+            entity.Property(e => e.VerifiedStatus).HasColumnName("Verified_Status");
         });
 
         modelBuilder.Entity<CaseLog>(entity =>

@@ -1,20 +1,18 @@
-using FundRaisingServer.Models;
 using FundRaisingServer.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace FundRaisingServer.Services
 {
     public class CaseTransactionService : ICaseTransactionRepository
     {
         private readonly FundRaisingDbContext _context;
+        private readonly ICasesRepository _caseRepo;
 
-        public CaseTransactionService(FundRaisingDbContext context)
+        public CaseTransactionService(FundRaisingDbContext context, ICasesRepository casesRepo)
         {
             _context = context;
+            _caseRepo = casesRepo;
         }
 
         // Retrieve all case transactions from the database
@@ -50,13 +48,12 @@ namespace FundRaisingServer.Services
         {
             try
             {
-                const string query = "INSERT INTO CaseTransactions (TransactionLog, TransactionAmount, CaseId, DonorCnic) " +
-                                     "VALUES (@TransactionLog, @TransactionAmount, @CaseId, @DonorCnic)";
-                await _context.Database.ExecuteSqlRawAsync(query,
-                    new SqlParameter("@TransactionLog", caseTransaction.TransactionLog),
-                    new SqlParameter("@TransactionAmount", caseTransaction.TransactionAmount),
-                    new SqlParameter("@CaseId", caseTransaction.CaseId),
-                    new SqlParameter("@DonorCnic", caseTransaction.DonorCnic));
+                await this._context.CaseTransactions.AddAsync(caseTransaction);
+                var existingCase = await this._caseRepo.GetCaseByIdAsync(caseTransaction.CaseId ?? 0);
+
+                existingCase!.CollectedDonations += caseTransaction.TransactionAmount;
+                await this._context.SaveChangesAsync();
+
             }
             catch (Exception e)
             {
