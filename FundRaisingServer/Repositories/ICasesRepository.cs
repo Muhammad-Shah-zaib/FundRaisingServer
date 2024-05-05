@@ -103,5 +103,7 @@ namespace FundRaisingServer.Repositories
         Task<CaseResponseDto> UnVerifyCaseAsync(int id);
 
 
+
+        Task<CaseResponseDto?> UpdateCaseCollectedAmountAsync(int caseId, decimal amount); 
     }
 }

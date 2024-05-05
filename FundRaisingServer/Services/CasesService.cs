@@ -229,5 +229,26 @@ namespace FundRaisingServer.Services
                 VerifiedStatus = false
             };
         }
+        public async Task<CaseResponseDto?> UpdateCaseCollectedAmountAsync(int caseId, decimal amount){
+            try
+            {
+                var existingCase = await this._context.Cases.FindAsync(caseId);
+                if (existingCase == null) return null;
+                existingCase.CollectedAmount += amount;
+                await this._context.SaveChangesAsync();
+                return new CaseResponseDto(){
+                    CaseId = existingCase.CaseId,
+                    CollectedDonations = existingCase.CollectedAmount,
+                    RemainingDonations = existingCase.RemainingAmount ?? 0,
+                    RequiredDonations = existingCase.RequiredAmount
+                };
+            }catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
     }
+
+
 }

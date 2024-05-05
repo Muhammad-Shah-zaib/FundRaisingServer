@@ -1,6 +1,7 @@
 using FundRaisingServer.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
+using FundRaisingServer.Models.DTOs.CaseTransactions;
 
 namespace FundRaisingServer.Services
 {
@@ -30,11 +31,14 @@ namespace FundRaisingServer.Services
         }
 
         // Retrieve a specific case transaction by its ID
-        public async Task<CaseTransaction> GetCaseTransactionByIdAsync(int id)
+        public async Task<CaseTransaction?> GetCaseTransactionByIdAsync(int id)
         {
             try
             {
-                return await _context.CaseTransactions.FindAsync(id);
+                var caseTransaction = await _context.CaseTransactions.FindAsync(id);
+                if (caseTransaction == null) return null;
+                
+                return caseTransaction;
             }
             catch (Exception e)
             {
@@ -44,16 +48,18 @@ namespace FundRaisingServer.Services
         }
 
         // Create a new case transaction
-        public async Task CreateCaseTransactionAsync(CaseTransaction caseTransaction)
+        public async Task AddCaseTransactionAsync(AddCaseTransactionRequestDto caseTransaction)
         {
             try
             {
-                await this._context.CaseTransactions.AddAsync(caseTransaction);
-                var existingCase = await this._caseRepo.GetCaseByIdAsync(caseTransaction.CaseId ?? 0);
-
-                existingCase!.CollectedDonations += caseTransaction.TransactionAmount;
-                await this._context.SaveChangesAsync();
-
+                await this._context.CaseTransactions.AddAsync(new CaseTransaction(){
+                    CaseId = caseTransaction.CaseId,
+                    DonorCnic = caseTransaction.DonorCnic,
+                    TransactionAmount = caseTransaction.TransactionAmount,
+                    TransactionLog = DateTime.UtcNow,
+                });
+                // need to fetch the case from the database and update the collected donations
+                await this._caseRepo.UpdateCaseCollectedAmountAsync(caseId: caseTransaction.CaseId, amount: caseTransaction.TransactionAmount);
             }
             catch (Exception e)
             {
