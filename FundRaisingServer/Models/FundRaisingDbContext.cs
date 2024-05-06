@@ -32,7 +32,7 @@ public partial class FundRaisingDbContext : DbContext
     public virtual DbSet<UserType> UserTypes { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Name=FundRaisingDb");
+        => optionsBuilder.UseSqlServer("Name=ConnectionStrings:FundRaisingDb");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -106,11 +106,13 @@ public partial class FundRaisingDbContext : DbContext
 
             entity.HasOne(d => d.Case).WithMany(p => p.CaseTransactions)
                 .HasForeignKey(d => d.CaseId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Case_Tran__Case___367C1819");
 
             entity.HasOne(d => d.DonorCnicNavigation).WithMany(p => p.CaseTransactions)
                 .HasForeignKey(d => d.DonorCnic)
-                .HasConstraintName("FK__Case_Tran__User___3587F3E0");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Case_Tran__Donator___3587F3E0");
         });
 
         modelBuilder.Entity<Donator>(entity =>
@@ -123,6 +125,11 @@ public partial class FundRaisingDbContext : DbContext
             entity.Property(e => e.TotalDonation)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("Total_Donation");
+
+            entity.HasOne(d => d.CnicNavigation).WithOne(p => p.Donator)
+                .HasForeignKey<Donator>(d => d.Cnic)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Donators_Ref_Users");
         });
 
         modelBuilder.Entity<Password>(entity =>

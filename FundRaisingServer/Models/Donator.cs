@@ -10,4 +10,6 @@ public partial class Donator
     public decimal TotalDonation { get; set; }
 
     public virtual ICollection<CaseTransaction> CaseTransactions { get; set; } = new List<CaseTransaction>();
+
+    public virtual User CnicNavigation { get; set; } = null!;
 }

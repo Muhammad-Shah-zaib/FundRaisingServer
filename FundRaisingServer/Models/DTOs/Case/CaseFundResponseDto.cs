@@ -1,4 +1,5 @@
 using System;
+using System.Net.Http.Headers;
 
 namespace FundRaisingServer.Models.DTOs
 {
@@ -10,7 +11,6 @@ namespace FundRaisingServer.Models.DTOs
         public decimal CollectedAmount { get; set; }
         public decimal RemainingAmount { get; set; }
         public DateTime CreatedDate { get; set; }
-
-        public CaseResponseDto Case { get; set; }
+        public CaseResponseDto Case { get; set; } = new CaseResponseDto();
     }
 }

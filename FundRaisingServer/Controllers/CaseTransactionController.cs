@@ -1,9 +1,10 @@
+using FundRaisingServer.Models.DTOs.CaseTransactions;
 using FundRaisingServer.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FundRaisingServer.Controllers;
 
-[ApiController]
+    [ApiController]
     [Route("/[controller]")]
     public class CaseTransactionController : ControllerBase
     {
@@ -15,13 +16,25 @@ namespace FundRaisingServer.Controllers;
         }
 
         [HttpGet]
-        public async Task<IEnumerable<CaseTransaction>> GetAllCaseTransactions()
+        [Route("GetAllCaseTransactions")]
+        public async Task<ActionResult<IEnumerable<CaseTransactionResponseDto>>> GetAllCaseTransactions()
         {
-            return await _caseTransactionRepository.GetAllCaseTransactionsAsync();
+            try
+            {
+                // getting the caseTransactions
+                return Ok(await this._caseTransactionRepository.GetAllCaseTransactionsAsync());
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return StatusCode(500, "Internal server error");
+            }
+            // return await _caseTransactionRepository.GetAllCaseTransactionsAsync();
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<CaseTransaction>> GetCaseTransactionById(int id)
+        [HttpGet]
+        [Route("GetCaseTransactionById/{id:int}")]
+        public async Task<ActionResult<CaseTransaction>> GetCaseTransactionById([FromRoute] int id)
         {
             var caseTransaction = await _caseTransactionRepository.GetCaseTransactionByIdAsync(id);
             if (caseTransaction == null)
@@ -32,14 +45,16 @@ namespace FundRaisingServer.Controllers;
         }
 
         [HttpPost]
-        public async Task<ActionResult<CaseTransaction>> CreateCaseTransaction(CaseTransaction caseTransaction)
+        [Route("AddCaseTransaction")]
+        public async Task<IActionResult> AddCaseTransaction(AddCaseTransactionRequestDto caseTransaction)
         {
-            await _caseTransactionRepository.CreateCaseTransactionAsync(caseTransaction);
-            return CreatedAtAction(nameof(GetCaseTransactionById), new { id = caseTransaction.CaseTransactionId }, caseTransaction);
+            await _caseTransactionRepository.AddCaseTransactionAsync(caseTransaction);
+            return Ok(true);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCaseTransaction(int id, CaseTransaction caseTransaction)
+        [HttpPut]
+        [Route("UpdateCaseTransaction/{id:int}")]
+        public async Task<IActionResult> UpdateCaseTransaction([FromRoute] int id, CaseTransaction caseTransaction)
         {
             if (id != caseTransaction.CaseTransactionId)
             {
@@ -51,8 +66,9 @@ namespace FundRaisingServer.Controllers;
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCaseTransaction(int id)
+        [HttpDelete]
+        [Route("DeleteCaseTransaction/{id:int}")]
+        public async Task<IActionResult> DeleteCaseTransaction([FromRoute] int id)
         {
             var caseTransaction = await _caseTransactionRepository.GetCaseTransactionByIdAsync(id);
             if (caseTransaction == null)

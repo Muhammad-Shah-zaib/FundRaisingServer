@@ -2,6 +2,7 @@ using FundRaisingServer.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
 using FundRaisingServer.Models.DTOs.CaseTransactions;
+using FundRaisingServer.Models.DTOs;
 
 namespace FundRaisingServer.Services
 {
@@ -17,11 +18,30 @@ namespace FundRaisingServer.Services
         }
 
         // Retrieve all case transactions from the database
-        public async Task<IEnumerable<CaseTransaction>> GetAllCaseTransactionsAsync()
+        public async Task<IEnumerable<CaseTransactionResponseDto>> GetAllCaseTransactionsAsync()
         {
             try
             {
-                return await _context.CaseTransactions.ToListAsync();
+                return await _context.CaseTransactions
+                    .Include(ct => ct.Case)
+                    .Include(ct => ct.DonorCnicNavigation)
+                    .Select(ct => new CaseTransactionResponseDto(){
+                        // transaction information
+                        CaseTransactionId = ct.CaseTransactionId,
+                        TransactionAmount = ct.TransactionAmount,
+                        TransacntionLogDate = ct.TransactionLog.Date.ToString("yyyy-MM-dd"),
+                        TransactionLogTime = ct.TransactionLog.TimeOfDay,
+                        // case information
+                        CaseId = ct.CaseId,
+                        CaseTitle = ct.Case!.Title ?? string.Empty,
+                        // donor information
+                        DonorCnic = ct.DonorCnic,
+                        DonorFirstName = ct.DonorCnicNavigation.CnicNavigation.FirstName ?? string.Empty,
+                        DonorLastName = ct.DonorCnicNavigation.CnicNavigation.LastName ?? string.Empty
+                    })
+                    .OrderByDescending(ct => ct.CaseTransactionId)
+                    .ToListAsync();
+
             }
             catch (Exception e)
             {
