@@ -135,6 +135,9 @@ public partial class FundRaisingDbContext : DbContext
             entity.Property(e => e.CollectedAmount)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("Collected_Amount");
+            entity.Property(e => e.Description)
+                .HasMaxLength(1028)
+                .IsUnicode(false);
         });
 
         modelBuilder.Entity<CauseLog>(entity =>
