@@ -11,5 +11,7 @@ public partial class Donator
 
     public virtual ICollection<CaseTransaction> CaseTransactions { get; set; } = new List<CaseTransaction>();
 
+    public virtual ICollection<CauseTransaction> CauseTransactions { get; set; } = new List<CauseTransaction>();
+
     public virtual User CnicNavigation { get; set; } = null!;
 }

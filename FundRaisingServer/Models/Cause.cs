@@ -7,11 +7,11 @@ public partial class Cause
 {
     public int CauseId { get; set; }
 
-    public string? Title { get; set; }
+    public string CauseTitle { get; set; } = null!;
 
-    public string? Description { get; set; }
+    public decimal CollectedAmount { get; set; }
 
-    public DateTime CreatedDate { get; set; }
+    public virtual ICollection<CauseLog> CauseLogs { get; set; } = new List<CauseLog>();
 
-    public virtual ICollection<Case> Cases { get; set; } = new List<Case>();
+    public virtual ICollection<CauseTransaction> CauseTransactions { get; set; } = new List<CauseTransaction>();
 }

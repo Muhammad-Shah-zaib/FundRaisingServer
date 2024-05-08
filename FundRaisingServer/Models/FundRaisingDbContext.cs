@@ -21,6 +21,12 @@ public partial class FundRaisingDbContext : DbContext
 
     public virtual DbSet<CaseTransaction> CaseTransactions { get; set; }
 
+    public virtual DbSet<Cause> Causes { get; set; }
+
+    public virtual DbSet<CauseLog> CauseLogs { get; set; }
+
+    public virtual DbSet<CauseTransaction> CauseTransactions { get; set; }
+
     public virtual DbSet<Donator> Donators { get; set; }
 
     public virtual DbSet<Password> Passwords { get; set; }
@@ -113,6 +119,86 @@ public partial class FundRaisingDbContext : DbContext
                 .HasForeignKey(d => d.DonorCnic)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Case_Tran__Donator___3587F3E0");
+        });
+
+        modelBuilder.Entity<Cause>(entity =>
+        {
+            entity.HasKey(e => e.CauseId).HasName("PK__Cause__4DCD5456CA334410");
+
+            entity.ToTable("Cause");
+
+            entity.Property(e => e.CauseId).HasColumnName("Cause_ID");
+            entity.Property(e => e.CauseTitle)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("Cause_Title");
+            entity.Property(e => e.CollectedAmount)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("Collected_Amount");
+        });
+
+        modelBuilder.Entity<CauseLog>(entity =>
+        {
+            entity.HasKey(e => e.CauseLogId).HasName("PK__Cause_Lo__0BE20CDB22256879");
+
+            entity.ToTable("Cause_Log");
+
+            entity.Property(e => e.CauseLogId).HasColumnName("Cause_Log_ID");
+            entity.Property(e => e.CauseId).HasColumnName("Cause_ID");
+            entity.Property(e => e.CauseTitle)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Cause_Title");
+            entity.Property(e => e.CollectedAmount)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("Collected_Amount");
+            entity.Property(e => e.LogTimestamp)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("Log_Timestamp");
+            entity.Property(e => e.LogType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Log_Type");
+            entity.Property(e => e.UserCnic).HasColumnName("User_CNIC");
+
+            entity.HasOne(d => d.Cause).WithMany(p => p.CauseLogs)
+                .HasForeignKey(d => d.CauseId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Cause_Log__Cause__44CA3770");
+
+            entity.HasOne(d => d.UserCnicNavigation).WithMany(p => p.CauseLogs)
+                .HasForeignKey(d => d.UserCnic)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Cause_Log__User___45BE5BA9");
+        });
+
+        modelBuilder.Entity<CauseTransaction>(entity =>
+        {
+            entity.HasKey(e => e.CauseTransactionId).HasName("PK__Cause_Tr__D5C40CA763E8FD19");
+
+            entity.ToTable("Cause_Transaction");
+
+            entity.Property(e => e.CauseTransactionId).HasColumnName("Cause_Transaction_ID");
+            entity.Property(e => e.CauseId).HasColumnName("Cause_ID");
+            entity.Property(e => e.DonorCnic).HasColumnName("Donor_CNIC");
+            entity.Property(e => e.TransactionAmount)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("Transaction_Amount");
+            entity.Property(e => e.TransactionTimestamp)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("Transaction_Timestamp");
+
+            entity.HasOne(d => d.Cause).WithMany(p => p.CauseTransactions)
+                .HasForeignKey(d => d.CauseId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Cause_Tra__Cause__4B7734FF");
+
+            entity.HasOne(d => d.DonorCnicNavigation).WithMany(p => p.CauseTransactions)
+                .HasForeignKey(d => d.DonorCnic)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Cause_Tra__Donor__4C6B5938");
         });
 
         modelBuilder.Entity<Donator>(entity =>
