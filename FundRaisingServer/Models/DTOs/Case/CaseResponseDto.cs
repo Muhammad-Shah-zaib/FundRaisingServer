@@ -7,7 +7,7 @@ namespace FundRaisingServer.Models.DTOs
     {
         public int CaseId { get; set; }
         public decimal CollectedDonations { get; set; }
-        public decimal RemainingDonations { get; set; }
+        public decimal? RemainingDonations { get; set; }
         public List<CaseLogDto> CaseLogs { get; set; } = [];
 
     }

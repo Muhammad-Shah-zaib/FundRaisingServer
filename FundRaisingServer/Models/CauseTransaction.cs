@@ -3,19 +3,19 @@ using System.Collections.Generic;
 
 namespace FundRaisingServer.Models;
 
-public partial class CaseTransaction
+public partial class CauseTransaction
 {
-    public int CaseTransactionId { get; set; }
+    public int CauseTransactionId { get; set; }
 
-    public DateTime TransactionLog { get; set; }
+    public DateTime TransactionTimestamp { get; set; }
 
     public decimal TransactionAmount { get; set; }
 
-    public int CaseId { get; set; }
+    public int CauseId { get; set; }
 
     public int DonorCnic { get; set; }
 
-    public virtual Case Case { get; set; } = null!;
+    public virtual Cause Cause { get; set; } = null!;
 
     public virtual Donator DonorCnicNavigation { get; set; } = null!;
 }

@@ -49,9 +49,8 @@ namespace FundRaisingServer.Services
             try
             {
                 await this._context.CaseTransactions.AddAsync(caseTransaction);
-                var existingCase = await this._caseRepo.GetCaseByIdAsync(caseTransaction.CaseId ?? 0);
-
-                existingCase!.CollectedDonations += caseTransaction.TransactionAmount;
+                var existingCase = await this._context.Cases.FindAsync(caseTransaction.CaseId);
+                existingCase!.CollectedAmount += caseTransaction.TransactionAmount;
                 await this._context.SaveChangesAsync();
 
             }
