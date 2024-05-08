@@ -1,6 +1,8 @@
 using FundRaisingServer.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
+using FundRaisingServer.Models.DTOs.CaseTransactions;
+using FundRaisingServer.Models.DTOs;
 
 namespace FundRaisingServer.Services
 {
@@ -16,11 +18,30 @@ namespace FundRaisingServer.Services
         }
 
         // Retrieve all case transactions from the database
-        public async Task<IEnumerable<CaseTransaction>> GetAllCaseTransactionsAsync()
+        public async Task<IEnumerable<CaseTransactionResponseDto>> GetAllCaseTransactionsAsync()
         {
             try
             {
-                return await _context.CaseTransactions.ToListAsync();
+                return await _context.CaseTransactions
+                    .Include(ct => ct.Case)
+                    .Include(ct => ct.DonorCnicNavigation)
+                    .Select(ct => new CaseTransactionResponseDto(){
+                        // transaction information
+                        CaseTransactionId = ct.CaseTransactionId,
+                        TransactionAmount = ct.TransactionAmount,
+                        TransacntionLogDate = ct.TransactionLog.Date.ToString("yyyy-MM-dd"),
+                        TransactionLogTime = ct.TransactionLog.TimeOfDay,
+                        // case information
+                        CaseId = ct.CaseId,
+                        CaseTitle = ct.Case!.Title ?? string.Empty,
+                        // donor information
+                        DonorCnic = ct.DonorCnic,
+                        DonorFirstName = ct.DonorCnicNavigation.CnicNavigation.FirstName ?? string.Empty,
+                        DonorLastName = ct.DonorCnicNavigation.CnicNavigation.LastName ?? string.Empty
+                    })
+                    .OrderByDescending(ct => ct.CaseTransactionId)
+                    .ToListAsync();
+
             }
             catch (Exception e)
             {
@@ -30,11 +51,14 @@ namespace FundRaisingServer.Services
         }
 
         // Retrieve a specific case transaction by its ID
-        public async Task<CaseTransaction> GetCaseTransactionByIdAsync(int id)
+        public async Task<CaseTransaction?> GetCaseTransactionByIdAsync(int id)
         {
             try
             {
-                return await _context.CaseTransactions.FindAsync(id);
+                var caseTransaction = await _context.CaseTransactions.FindAsync(id);
+                if (caseTransaction == null) return null;
+                
+                return caseTransaction;
             }
             catch (Exception e)
             {
@@ -44,15 +68,26 @@ namespace FundRaisingServer.Services
         }
 
         // Create a new case transaction
-        public async Task CreateCaseTransactionAsync(CaseTransaction caseTransaction)
+        public async Task AddCaseTransactionAsync(AddCaseTransactionRequestDto caseTransaction)
         {
             try
             {
+<<<<<<< HEAD
                 await this._context.CaseTransactions.AddAsync(caseTransaction);
                 var existingCase = await this._context.Cases.FindAsync(caseTransaction.CaseId);
                 existingCase!.CollectedAmount += caseTransaction.TransactionAmount;
                 await this._context.SaveChangesAsync();
 
+=======
+                await this._context.CaseTransactions.AddAsync(new CaseTransaction(){
+                    CaseId = caseTransaction.CaseId,
+                    DonorCnic = caseTransaction.DonorCnic,
+                    TransactionAmount = caseTransaction.TransactionAmount,
+                    TransactionLog = DateTime.UtcNow,
+                });
+                // need to fetch the case from the database and update the collected donations
+                await this._caseRepo.UpdateCaseCollectedAmountAsync(caseId: caseTransaction.CaseId, amount: caseTransaction.TransactionAmount);
+>>>>>>> 4ab63298207977f13ed64d920967c696394def9a
             }
             catch (Exception e)
             {

@@ -119,6 +119,7 @@ public partial class FundRaisingDbContext : DbContext
                 .HasForeignKey(d => d.DonorCnic)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Case_Tran__Donator___3587F3E0");
+<<<<<<< HEAD
         });
 
         modelBuilder.Entity<Cause>(entity =>
@@ -199,6 +200,8 @@ public partial class FundRaisingDbContext : DbContext
                 .HasForeignKey(d => d.DonorCnic)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Cause_Tra__Donor__4C6B5938");
+=======
+>>>>>>> 4ab63298207977f13ed64d920967c696394def9a
         });
 
         modelBuilder.Entity<Donator>(entity =>

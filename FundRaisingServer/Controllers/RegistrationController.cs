@@ -93,7 +93,7 @@ public class RegistrationController(IUserTypeRepository userTypeService, IUserRe
     [Route("Test")]
     // This will check and validate the JWT token presence
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> testing()
+    public IActionResult Testing()
     {
         return Ok("I am working");
     }
