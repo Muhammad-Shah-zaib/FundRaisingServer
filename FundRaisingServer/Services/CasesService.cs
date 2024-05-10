@@ -53,7 +53,7 @@ namespace FundRaisingServer.Services
         }
 
         // the method to get a single case from the DB
-        public async Task<CaseResponseDto?> GetCaseByIdAsync([FromBody] int id) // Add this method
+        public async Task<CaseResponseDto?> GetCaseByIdAsync(int id) // Add this method
         {
             try
             {
@@ -69,6 +69,9 @@ namespace FundRaisingServer.Services
                     Title = singleCase.Title,
                     Description = singleCase.Description,
                     VerifiedStatus = singleCase.VerifiedStatus,
+                    CollectedDonations = singleCase.CollectedAmount,
+                    RequiredDonations = singleCase.RequiredAmount,
+                    RemainingDonations = singleCase.RemainingAmount,
                     CauseName = singleCase.CauseName ?? string.Empty,
                 };
 
