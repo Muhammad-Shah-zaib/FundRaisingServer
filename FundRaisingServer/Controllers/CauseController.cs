@@ -1,9 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using FundRaisingServer.Models;
 using FundRaisingServer.Dtos;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace FundRaisingServer.Controllers
 {
@@ -19,6 +16,7 @@ namespace FundRaisingServer.Controllers
         }
 
         [HttpPost]
+        [Route("addCause")]
         public async Task<ActionResult<Cause>> AddCause([FromBody] CauseDto causeDto)
         {
             try
@@ -27,10 +25,11 @@ namespace FundRaisingServer.Controllers
                 {
                     CauseTitle = causeDto.CauseTitle,
                     Description = causeDto.Description,
+                    ClosedStatus = false,
                     CollectedAmount = 0 // Assuming initial collected amount is zero
                 };
-                
-                _context.Causes.Add(newCause);
+
+                await _context.Causes.AddAsync(newCause);
                 await _context.SaveChangesAsync();
 
                 var latestCause = _context.Causes.OrderByDescending(c => c.CauseId).FirstOrDefault();
@@ -38,7 +37,7 @@ namespace FundRaisingServer.Controllers
                 var newCauseLog = new CauseLog
                 {
                     LogType = "CREATED",
-                    LogTimestamp = DateTime.Now,
+                    LogTimestamp = DateTime.UtcNow,
                     CauseTitle = causeDto.CauseTitle,
                     UserCnic = causeDto.UserCnic,
                     CauseId = newCause.CauseId
@@ -47,7 +46,7 @@ namespace FundRaisingServer.Controllers
                 _context.CauseLogs.Add(newCauseLog);
                 await _context.SaveChangesAsync();
 
-                return Ok(latestCause);
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -55,123 +54,113 @@ namespace FundRaisingServer.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
-public async Task<ActionResult> DeleteCause(int id,CauseDto causeDto)
-{
-    var cause = await _context.Causes.FindAsync(id);
-    if (cause == null)
-    {
-        return NotFound();
-    }
-
-    if (cause.CollectedAmount>0 | cause.ClosedStatus)
-    {
-        return BadRequest("Cannot delete cause with a non-zero collected amount. Please close the cause first.");
-    }
-
-    try
-    {
-
-        // Delete all associated cause transactions
-        var causeTransactions = _context.CauseTransactions.Where(ct => ct.CauseId == id);
-        _context.CauseTransactions.RemoveRange(causeTransactions);
-        _context.Causes.Remove(cause);
-        await _context.SaveChangesAsync();
-
-        var newCauseLog = new CauseLog
+        // below method delete the Cause if and only if the Transaction are null for the associated causeId
+        [HttpDelete]
+        [Route("DeleteCause/{id:int}")]
+        public async Task<ActionResult> DeleteCause([FromRoute] int id)
         {
-            LogType = "DELETED",
-            LogTimestamp = DateTime.Now,
-            CauseTitle = cause.CauseTitle,
-            UserCnic = causeDto.UserCnic,
-            CauseId = cause.CauseId
-        };
+            try
+            {
+                var cause = await _context.Causes.Where(c => c.CauseId == id).FirstOrDefaultAsync();
+                if (cause == null) return NotFound();
 
-        _context.CauseLogs.Add(newCauseLog);
-        await _context.SaveChangesAsync();
+                // we need to make sure there should be no cause Transactions othervise we will close the cause instead of deleting it
+                var transactionList = await this._context.CauseTransactions.Where(t => t.CauseId == id).ToListAsync();
+                if (cause.ClosedStatus) return BadRequest("Cannot delete, Cause is already closed");
+                else if (transactionList == null) return BadRequest("Cannot delete since there are already some of the transactions");
+                else if (cause.CollectedAmount > 0 ) 
+                    return BadRequest("Cannot delete cause with a non-zero collected amount.");
+                // since the cause exist we need to delete the cause logs first...
 
-        return Ok();
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, $"Internal server error: {ex.Message}");
-    }
-}
+                this._context.CauseLogs.RemoveRange(
+                    await this._context.CauseLogs.Where(l => l.CauseId == id).ToListAsync()
+                );
+                await this._context.SaveChangesAsync();
+                _context.Causes.Remove(cause);
+                await _context.SaveChangesAsync();
 
-[HttpPut("{id}/close")]
-public async Task<ActionResult> CloseCause(int id, CauseDto causeDto)
-{
-    var cause = await _context.Causes.FindAsync(id);
-    if (cause == null)
-    {
-        return NotFound();
-    }
-
-    if (cause.CollectedAmount == 0)
-    {
-        return BadRequest("Cannot close cause with a zero collected amount. Please add transactions to the cause first.");
-    }
-
-    try
-    {
-        cause.ClosedStatus = true;
-        await _context.SaveChangesAsync();
-
-        var newCauseLog = new CauseLog
-        {
-            LogType = "CLOSED",
-            LogTimestamp = DateTime.Now,
-            CauseTitle = cause.CauseTitle,
-            UserCnic = causeDto.UserCnic,
-            CauseId = cause.CauseId
-        };
-
-        _context.CauseLogs.Add(newCauseLog);
-        await _context.SaveChangesAsync();
-
-        return Ok();
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, $"Internal server error: {ex.Message}");
-    }
-}
-[HttpPut("{id}")]
-public async Task<ActionResult> UpdateCause(int id, CauseUpdateDto causeUpdateDto)
-{
-    if (!ModelState.IsValid)
-    {
-        return BadRequest(ModelState);
-    }
-    try
-    {
-        var cause = await _context.Causes.FindAsync(id);
-        if (cause == null)
-        {
-            return NotFound();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
-        cause.CauseTitle = causeUpdateDto.Title;
-        cause.Description = causeUpdateDto.Description;
-        await _context.SaveChangesAsync();
-        var newCauseLog = new CauseLog
+        [HttpPut("{id}/close")]
+        public async Task<ActionResult> CloseCause(int id, CauseDto causeDto)
         {
-            LogType = "UPDATED",
-            LogTimestamp = DateTime.Now,
-            CauseTitle = cause.CauseTitle,
-            UserCnic = causeUpdateDto.UserCnic,
-            CauseId = cause.CauseId,
-            CollectedAmount = cause.CollectedAmount
-        };
-        _context.CauseLogs.Add(newCauseLog);
-        await _context.SaveChangesAsync();
+            var cause = await _context.Causes.FindAsync(id);
+            if (cause == null)
+            {
+                return NotFound();
+            }
 
-        return Ok();
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, $"Internal server error: {ex.Message}");
+            if (cause.CollectedAmount == 0)
+            {
+                return BadRequest("Cannot close cause with a zero collected amount. Please add transactions to the cause first.");
+            }
+
+            try
+            {
+                cause.ClosedStatus = true;
+                await _context.SaveChangesAsync();
+
+                var newCauseLog = new CauseLog
+                {
+                    LogType = "CLOSED",
+                    LogTimestamp = DateTime.Now,
+                    CauseTitle = cause.CauseTitle,
+                    UserCnic = causeDto.UserCnic,
+                    CauseId = cause.CauseId
+                };
+
+                _context.CauseLogs.Add(newCauseLog);
+                await _context.SaveChangesAsync();
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+        [HttpPut("{id}")]
+        public async Task<ActionResult> UpdateCause(int id, CauseUpdateDto causeUpdateDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var cause = await _context.Causes.FindAsync(id);
+                if (cause == null)
+                {
+                    return NotFound();
+                }
+
+                cause.CauseTitle = causeUpdateDto.Title;
+                cause.Description = causeUpdateDto.Description;
+                await _context.SaveChangesAsync();
+                var newCauseLog = new CauseLog
+                {
+                    LogType = "UPDATED",
+                    LogTimestamp = DateTime.Now,
+                    CauseTitle = cause.CauseTitle,
+                    UserCnic = causeUpdateDto.UserCnic,
+                    CauseId = cause.CauseId,
+                    CollectedAmount = cause.CollectedAmount
+                };
+                _context.CauseLogs.Add(newCauseLog);
+                await _context.SaveChangesAsync();
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
 }
-  }
-    }
