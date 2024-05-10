@@ -129,7 +129,6 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
             Convert.FromBase64String(userPassword!.HashedPassword!),
                 Convert.FromBase64String(userPassword!.HashKey!),
                 Encoding.UTF8.GetBytes(inputPassword));
-
         return result;
     }
 
@@ -168,7 +167,7 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
     public async Task<bool> UpdateUserAsync(UserUpdateRequestDto userUpdateRequestDto)
     {
         const string query =
-            "UPDATE Users SET First_Name = @First_Name, Last_Name = @Last_Name, Email = @Email WHERE User_CNIC = @UserId";
+            "UPDATE Users SET First_Name = @First_Name, Last_Name = @Last_Name, Email = @Email WHERE User_CNIC = @UserCnic";
 
         // now we will update the user
         await this._context.Database.ExecuteSqlRawAsync(query,

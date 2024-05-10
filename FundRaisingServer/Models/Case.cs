@@ -21,6 +21,8 @@ public partial class Case
 
     public decimal? RemainingAmount { get; set; }
 
+    public bool ResolveStatus { get; set; }
+
     public virtual ICollection<CaseLog> CaseLogs { get; set; } = new List<CaseLog>();
 
     public virtual ICollection<CaseTransaction> CaseTransactions { get; set; } = new List<CaseTransaction>();

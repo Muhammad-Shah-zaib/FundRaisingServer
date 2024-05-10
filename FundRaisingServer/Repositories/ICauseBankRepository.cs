@@ -20,4 +20,6 @@ public interface ICauseBankService
      */
     Task<IEnumerable<CauseResponseDto>> GetAllCausesAsync();
 
+    Task<DonationSoFarResponse> GetDonationsSoFarAsync();
+
 }

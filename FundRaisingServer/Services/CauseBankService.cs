@@ -13,6 +13,7 @@ public class CauseBankService (FundRaisingDbContext context): ICauseBankService 
         try
         {
             return await this._context.Causes
+            .Where(c => !c.ClosedStatus)
             .Select(c => new CauseResponseDto()
             {
                 CauseDescription = c.Description ?? string.Empty,
@@ -31,7 +32,9 @@ public class CauseBankService (FundRaisingDbContext context): ICauseBankService 
     {
         try
         {
-            var totalCurrentDonations = await this._context.Causes.SumAsync(c => c.CollectedAmount);
+            var totalCurrentDonations = await this._context.Causes
+            .Where(c => !c.ClosedStatus)
+            .SumAsync(c => c.CollectedAmount);
             return new CauseBankResponseDto()
             {
                 TotalCurrentDonations = totalCurrentDonations
@@ -45,5 +48,21 @@ public class CauseBankService (FundRaisingDbContext context): ICauseBankService 
         
     }
 
+    public async Task<DonationSoFarResponse> GetDonationsSoFarAsync(){
+        try
+        {
+            var totalDonations =  await this._context.Causes
+                .SumAsync(c => c.CollectedAmount);
+
+                return new DonationSoFarResponse(){
+                    TotalDonations = totalDonations
+                };
+        }catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+
+    }
 
 }

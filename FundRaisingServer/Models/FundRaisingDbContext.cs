@@ -38,7 +38,7 @@ public partial class FundRaisingDbContext : DbContext
     public virtual DbSet<UserType> UserTypes { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Name=ConnectionStrings:FundRaisingDb");
+        => optionsBuilder.UseSqlServer("Name=FundRaisingDb");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -64,6 +64,7 @@ public partial class FundRaisingDbContext : DbContext
             entity.Property(e => e.RequiredAmount)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("Required_Amount");
+            entity.Property(e => e.ResolveStatus).HasColumnName("Resolve_Status");
             entity.Property(e => e.Title)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -86,11 +87,19 @@ public partial class FundRaisingDbContext : DbContext
                 .HasMaxLength(20)
                 .IsUnicode(false)
                 .HasColumnName("Log_Type");
+            entity.Property(e => e.UserCnic)
+                .HasDefaultValue(12)
+                .HasColumnName("User_CNIC");
 
             entity.HasOne(d => d.Case).WithMany(p => p.CaseLogs)
                 .HasForeignKey(d => d.CaseId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Case_Log__Case_I__3B40CD36");
+
+            entity.HasOne(d => d.UserCnicNavigation).WithMany(p => p.CaseLogs)
+                .HasForeignKey(d => d.UserCnic)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Case_Log__User_C__6166761E");
         });
 
         modelBuilder.Entity<CaseTransaction>(entity =>
@@ -132,6 +141,7 @@ public partial class FundRaisingDbContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false)
                 .HasColumnName("Cause_Title");
+            entity.Property(e => e.ClosedStatus).HasColumnName("Closed_Status");
             entity.Property(e => e.CollectedAmount)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("Collected_Amount");
@@ -234,10 +244,10 @@ public partial class FundRaisingDbContext : DbContext
                 .HasMaxLength(1000)
                 .IsUnicode(false)
                 .HasColumnName("Hashed_Password");
-            entity.Property(e => e.UserId).HasColumnName("User_ID");
+            entity.Property(e => e.UserCnic).HasColumnName("User_CNIC");
 
-            entity.HasOne(d => d.User).WithMany(p => p.Passwords)
-                .HasForeignKey(d => d.UserId)
+            entity.HasOne(d => d.UserCnicNavigation).WithMany(p => p.Passwords)
+                .HasForeignKey(d => d.UserCnic)
                 .HasConstraintName("FK__Passwords__User___66603565");
         });
 

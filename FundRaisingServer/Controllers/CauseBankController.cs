@@ -23,4 +23,11 @@ public class CauseBankController(ICauseBankService causeBankService): Controller
     {
         return Ok(await this._causeBankService.GetAllCausesAsync());
     }
+
+    [HttpGet]
+    [Route("GetDonationsSoFar")]
+    public async Task<ActionResult<DonationSoFarResponse>> GetDonationsSoFar()
+    {
+        return Ok(await this._causeBankService.GetDonationsSoFarAsync());
+    }
 }

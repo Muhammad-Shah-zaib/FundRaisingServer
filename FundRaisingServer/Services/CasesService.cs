@@ -19,6 +19,7 @@ namespace FundRaisingServer.Services
             try
             {
                 var cases = await this._context.Cases
+                    .Where(c => !c.ResolveStatus)
                     .Select(c => new CaseResponseDto()
                     {
                         CaseId = c.CaseId,
