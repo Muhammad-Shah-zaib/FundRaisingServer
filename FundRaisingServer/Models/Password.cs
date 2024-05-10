@@ -11,7 +11,7 @@ public partial class Password
 
     public string? HashKey { get; set; }
 
-    public int? UserId { get; set; }
+    public int? UserCnic { get; set; }
 
-    public virtual User? User { get; set; }
+    public virtual User? UserCnicNavigation { get; set; }
 }

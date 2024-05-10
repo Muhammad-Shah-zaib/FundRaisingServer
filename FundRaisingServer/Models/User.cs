@@ -13,11 +13,10 @@ public partial class User
 
     public string Email { get; set; } = null!;
 
-<<<<<<< HEAD
+    public virtual ICollection<CaseLog> CaseLogs { get; set; } = new List<CaseLog>();
+
     public virtual ICollection<CauseLog> CauseLogs { get; set; } = new List<CauseLog>();
 
-=======
->>>>>>> 4ab63298207977f13ed64d920967c696394def9a
     public virtual Donator? Donator { get; set; }
 
     public virtual ICollection<Password> Passwords { get; set; } = new List<Password>();

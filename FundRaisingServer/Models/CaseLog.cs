@@ -13,5 +13,9 @@ public partial class CaseLog
 
     public int CaseId { get; set; }
 
+    public int UserCnic { get; set; }
+
     public virtual Case Case { get; set; } = null!;
+
+    public virtual User UserCnicNavigation { get; set; } = null!;
 }

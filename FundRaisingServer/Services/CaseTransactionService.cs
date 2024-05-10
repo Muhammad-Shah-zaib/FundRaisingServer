@@ -72,13 +72,6 @@ namespace FundRaisingServer.Services
         {
             try
             {
-<<<<<<< HEAD
-                await this._context.CaseTransactions.AddAsync(caseTransaction);
-                var existingCase = await this._context.Cases.FindAsync(caseTransaction.CaseId);
-                existingCase!.CollectedAmount += caseTransaction.TransactionAmount;
-                await this._context.SaveChangesAsync();
-
-=======
                 await this._context.CaseTransactions.AddAsync(new CaseTransaction(){
                     CaseId = caseTransaction.CaseId,
                     DonorCnic = caseTransaction.DonorCnic,
@@ -87,7 +80,6 @@ namespace FundRaisingServer.Services
                 });
                 // need to fetch the case from the database and update the collected donations
                 await this._caseRepo.UpdateCaseCollectedAmountAsync(caseId: caseTransaction.CaseId, amount: caseTransaction.TransactionAmount);
->>>>>>> 4ab63298207977f13ed64d920967c696394def9a
             }
             catch (Exception e)
             {
