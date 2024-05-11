@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FundRaisingServer.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class CauseController : ControllerBase
     {
@@ -46,7 +46,7 @@ namespace FundRaisingServer.Controllers
                 _context.CauseLogs.Add(newCauseLog);
                 await _context.SaveChangesAsync();
 
-                return Ok();
+                return Ok("Cause added successfully");
             }
             catch (Exception ex)
             {
@@ -67,7 +67,7 @@ namespace FundRaisingServer.Controllers
                 // we need to make sure there should be no cause Transactions othervise we will close the cause instead of deleting it
                 var transactionList = await this._context.CauseTransactions.Where(t => t.CauseId == id).ToListAsync();
                 if (cause.ClosedStatus) return BadRequest("Cannot delete, Cause is already closed");
-                else if (transactionList == null) return BadRequest("Cannot delete since there are already some of the transactions");
+                else if (transactionList == null) return BadRequest();
                 else if (cause.CollectedAmount > 0 ) 
                     return BadRequest("Cannot delete cause with a non-zero collected amount.");
                 // since the cause exist we need to delete the cause logs first...
@@ -87,8 +87,9 @@ namespace FundRaisingServer.Controllers
             }
         }
 
-        [HttpPut("{id}/close")]
-        public async Task<ActionResult> CloseCause(int id, CauseDto causeDto)
+        [HttpPut]
+        [Route("CloseCause/{id:int}")]
+        public async Task<ActionResult> CloseCause([FromRoute] int id,[FromBody] CauseDto causeDto)
         {
             var cause = await _context.Causes.FindAsync(id);
             if (cause == null)
@@ -125,8 +126,9 @@ namespace FundRaisingServer.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-        [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateCause(int id, CauseUpdateDto causeUpdateDto)
+        [HttpPut]
+        [Route("UpdateCause/{id:int}")]
+        public async Task<ActionResult> UpdateCause([FromRoute] int id, [FromBody] CauseUpdateDto causeUpdateDto)
         {
             if (!ModelState.IsValid)
             {
@@ -134,11 +136,8 @@ namespace FundRaisingServer.Controllers
             }
             try
             {
-                var cause = await _context.Causes.FindAsync(id);
-                if (cause == null)
-                {
-                    return NotFound();
-                }
+                var cause = await this._context.Causes.FindAsync(id);
+                if (cause == null) return NotFound();
 
                 cause.CauseTitle = causeUpdateDto.Title;
                 cause.Description = causeUpdateDto.Description;
@@ -146,10 +145,10 @@ namespace FundRaisingServer.Controllers
                 var newCauseLog = new CauseLog
                 {
                     LogType = "UPDATED",
-                    LogTimestamp = DateTime.Now,
-                    CauseTitle = cause.CauseTitle,
+                    LogTimestamp = DateTime.UtcNow,
+                    CauseTitle = causeUpdateDto.Title,
                     UserCnic = causeUpdateDto.UserCnic,
-                    CauseId = cause.CauseId,
+                    CauseId = id,
                     CollectedAmount = cause.CollectedAmount
                 };
                 _context.CauseLogs.Add(newCauseLog);

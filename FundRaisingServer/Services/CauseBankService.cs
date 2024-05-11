@@ -16,6 +16,7 @@ public class CauseBankService (FundRaisingDbContext context): ICauseBankService 
             .Where(c => !c.ClosedStatus)
             .Select(c => new CauseResponseDto()
             {
+                CauseId = c.CauseId,
                 CauseDescription = c.Description ?? string.Empty,
                 CauseTitle = c.CauseTitle,
                 CollectedDonation = c.CollectedAmount
