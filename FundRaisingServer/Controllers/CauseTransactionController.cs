@@ -54,17 +54,21 @@ public class CauseTransactionController : ControllerBase
     }
 
     private void LogCauseTransaction(CauseTransaction causeTransaction)
-    {
-        var newCauseLog = new CauseLog
-        {
-            LogType = "Transaction made",
-            LogTimestamp = DateTime.Now,
-            CauseTitle = causeTransaction.Cause.CauseTitle,
-            UserCnic = causeTransaction.DonorCnic,
-            CauseId = causeTransaction.CauseId
-        };
+{
+    var collectedAmountAtTransaction = _context.CauseTransactions
+        .Where(ct => ct.CauseId == causeTransaction.CauseId)
+        .Sum(ct => ct.TransactionAmount);
 
-        _context.CauseLogs.Add(newCauseLog);
-        _context.SaveChangesAsync();
-    }
-}}
+    var newCauseLog = new CauseLog
+    {
+        LogType = "Transaction made",
+        LogTimestamp = DateTime.Now,
+        CauseTitle = causeTransaction.Cause.CauseTitle,
+        UserCnic = causeTransaction.DonorCnic,
+        CauseId = causeTransaction.CauseId,
+        CollectedAmount = collectedAmountAtTransaction
+    };
+
+    _context.CauseLogs.Add(newCauseLog);
+    _context.SaveChangesAsync();
+}}}
