@@ -1,6 +1,7 @@
 using FundRaisingServer.Models.DTOs;
 using FundRaisingServer.Models.DTOs.Case;
 using FundRaisingServer.Repositories;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FundRaisingServer.Controllers
@@ -16,6 +17,29 @@ namespace FundRaisingServer.Controllers
             _casesRepo = casesRepo;
         }
 
+        [HttpPut]
+        [Route("ResolveCase/{id:int}")]
+        public async Task<IActionResult> ResolveCase([FromRoute] int id)
+        {
+            try
+            {
+                var checkCase = await this._casesRepo.ResolveCaseAsync(id);
+
+                return checkCase switch
+                {
+                    null => new NotFoundResult(),
+                    true => Ok("Case has been resolved"),
+                    _ => StatusCode(500, "Internal server Error")
+                };
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            
+        }
+        
         [HttpGet]
         [Route("GetAllCases")]
         public async Task<IEnumerable<CaseResponseDto>> GetAllCases()
@@ -103,7 +127,7 @@ namespace FundRaisingServer.Controllers
         }
 
         [HttpPut]
-        [Route("UnVerifyCase/{id}")]
+        [Route("UnVerifyCase/{id:int}")]
         public async Task<ActionResult<CaseResponseDto>> UnVerifyCase([FromRoute] int id)
         {
             // IMPLEMENTING THIS FUNCTION RN

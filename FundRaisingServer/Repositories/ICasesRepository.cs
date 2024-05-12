@@ -104,6 +104,9 @@ namespace FundRaisingServer.Repositories
 
 
 
-        Task<CaseResponseDto?> UpdateCaseCollectedAmountAsync(int caseId, decimal amount); 
+        Task<CaseResponseDto?> UpdateCaseCollectedAmountAsync(int caseId, decimal amount);
+
+
+        Task<bool?> ResolveCaseAsync(int id);
     }
 }

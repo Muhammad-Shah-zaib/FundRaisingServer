@@ -252,7 +252,23 @@ namespace FundRaisingServer.Services
                 throw;
             }
         }
+        public async Task<bool?> ResolveCaseAsync(int id)
+        {
+            try
+            {
+                var existingCase = await this._context.Cases.FindAsync(id);
+                if (existingCase == null) return null;
+                existingCase.ResolveStatus = true;
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
     }
 
-
+    
 }
