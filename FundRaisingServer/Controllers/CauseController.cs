@@ -113,7 +113,8 @@ namespace FundRaisingServer.Controllers
                     LogTimestamp = DateTime.Now,
                     CauseTitle = cause.CauseTitle,
                     UserCnic = causeDto.UserCnic,
-                    CauseId = cause.CauseId
+                    CauseId = cause.CauseId,
+                    CollectedAmount= cause.CollectedAmount
                 };
 
                 _context.CauseLogs.Add(newCauseLog);
