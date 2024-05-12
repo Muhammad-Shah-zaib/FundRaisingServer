@@ -37,9 +37,12 @@ public class LoginService(IJwtTokenRepository jwtTokenService, IUserRepository u
 
             var response = new LoginResponseDto()
             {
+                UserCnic = user.UserCnic,
                 Email = request.Email,
                 Token = token,
-                Status = true
+                FirstName = user.FirstName ?? string.Empty,
+                LastName = user.LastName ?? string.Empty,
+                Status = true   
             };
 
             return response;
