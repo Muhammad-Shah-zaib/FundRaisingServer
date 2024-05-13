@@ -96,6 +96,7 @@ namespace FundRaisingServer.Services
                     CauseName = caseRequestDto.CauseName,
                     VerifiedStatus = caseRequestDto.VerifiedStatus,
                     RequiredAmount = caseRequestDto.RequiredDonations,
+                    ResolveStatus = false,
                     CollectedAmount = 0 // initially there will be no amount collected
                 };
 
@@ -110,10 +111,20 @@ namespace FundRaisingServer.Services
                     .FirstOrDefaultAsync();
                 
                 // now we need to add the CREATED_DATE log
-                await this._caseLogRepository.AddOrUpdateCaseLogAsync(new AddCaseLogRequestDto()
+                await this._caseLogRepository.AddNewCaseLogAsync(new AddCaseLogRequestDto()
                 {
                     CaseId = caseId,
                     LogType = "CREATED_DATE"
+                },
+                new AddCaseToLogRequestDto(){
+                    Title = caseRequestDto.Title,
+                    CauseName = caseRequestDto.CauseName,
+                    RequiredDonations = caseRequestDto.RequiredDonations,
+                    CollectedDonations = 0,
+                    RemainingDonations = caseRequestDto.RequiredDonations,
+                    VerifiedStatus = caseRequestDto.VerifiedStatus,
+                    ResolvedStatus = false,
+                    Description = caseRequestDto.Description
                 });
                 await this._context.SaveChangesAsync();
             }
@@ -169,11 +180,11 @@ namespace FundRaisingServer.Services
                 existingCase.RequiredAmount = caseDto.RequiredDonations;
                 
                 // now adding the Updated case Log
-                await this._caseLogRepository.AddOrUpdateCaseLogAsync(new AddCaseLogRequestDto()
-                {
-                    CaseId = id,
-                    LogType = "UPDATED_DATE"
-                });
+                // await this._caseLogRepository.aDD(new AddCaseLogRequestDto()
+                // {
+                //     CaseId = id,
+                //     LogType = "UPDATED_DATE"
+                // });
                 await _context.SaveChangesAsync();
             }
             catch (Exception e)

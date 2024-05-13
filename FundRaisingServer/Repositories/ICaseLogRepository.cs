@@ -14,5 +14,5 @@ public interface ICaseLogRepository
      * if yes, we need ot update that
      * log
      */
-    Task<bool> AddOrUpdateCaseLogAsync(AddCaseLogRequestDto caseLogRequestDto);
+    Task<bool> AddNewCaseLogAsync(AddCaseLogRequestDto caseLogRequestDto, AddCaseToLogRequestDto addCaseToLogRequestDto);
 }
