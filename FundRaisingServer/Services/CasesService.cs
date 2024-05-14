@@ -244,6 +244,8 @@ namespace FundRaisingServer.Services
                 VerifiedStatus = false
             };
         }
+
+        // the method to update the collectedAmount of a case in the DB - Call this after transation is made to update the case Colelcted Amount
         public async Task<CaseResponseDto?> UpdateCaseCollectedAmountAsync(int caseId, decimal amount){
             try
             {
@@ -263,7 +265,9 @@ namespace FundRaisingServer.Services
                 throw;
             }
         }
-        public async Task<bool?> ResolveCaseAsync(int id)
+
+        // this method is used to resolve a case
+        public async Task<bool?> ResolveCaseAsync(int id, UpdateCaseRequestDto updateCaseRequestDto)
         {
             try
             {
@@ -271,6 +275,22 @@ namespace FundRaisingServer.Services
                 if (existingCase == null) return null;
                 existingCase.ResolveStatus = true;
                 await _context.SaveChangesAsync();
+
+                // now we need to add the log of this case
+                await this._context.CaseLogs.AddAsync(new CaseLog(){
+                    CaseId = id,
+                    LogType = "RESOLVED_DATE",
+                    LogTimestamp = DateTime.UtcNow,
+                    Description = updateCaseRequestDto.Description,
+                    Title = updateCaseRequestDto.Title,
+                    CollectedAmount = updateCaseRequestDto.CollectedDonations,
+                    RequiredAmount = updateCaseRequestDto.RequiredDonations,
+                    VerifiedStatus = updateCaseRequestDto.VerifiedStatus,
+                    ResolvedStatus = true,
+                    CauseName = updateCaseRequestDto.CauseName,
+                    UserCnic = updateCaseRequestDto.UserCnic
+                });
+
                 return true;
             }
             catch (Exception e)
@@ -279,7 +299,6 @@ namespace FundRaisingServer.Services
                 throw;
             }
         }
-    }
 
-    
+    }   
 }

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
 using FundRaisingServer.Models.DTOs.CaseTransactions;
 using FundRaisingServer.Models.DTOs;
+using FundRaisingServer.Models.DTOs.CaseLog;
 
 namespace FundRaisingServer.Services
 {
@@ -127,6 +128,11 @@ namespace FundRaisingServer.Services
                 Console.WriteLine(e);
                 throw;
             }
+        }
+
+        public Task AddCaseLogAsync(CaseLogDto caseLog)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,19 +1,20 @@
 using FundRaisingServer.Models.DTOs.CaseTransactions;
 using FundRaisingServer.Repositories;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FundRaisingServer.Controllers;
-
+namespace FundRaisingServer.Controllers
+{
     [ApiController]
     [Route("/[controller]")]
     public class CaseTransactionController : ControllerBase
     {
         private readonly ICaseTransactionRepository _caseTransactionRepository;
+        private readonly ILogger<CaseTransactionController> _logger;
 
-        public CaseTransactionController(ICaseTransactionRepository caseTransactionRepository)
+        public CaseTransactionController(ICaseTransactionRepository caseTransactionRepository, ILogger<CaseTransactionController> logger)
         {
             _caseTransactionRepository = caseTransactionRepository;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -22,15 +23,13 @@ namespace FundRaisingServer.Controllers;
         {
             try
             {
-                // getting the caseTransactions
-                return Ok(await this._caseTransactionRepository.GetAllCaseTransactionsAsync());
+                return Ok(await _caseTransactionRepository.GetAllCaseTransactionsAsync());
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                _logger.LogError(e, "Failed to get all case transactions.");
                 return StatusCode(500, "Internal server error");
             }
-            // return await _caseTransactionRepository.GetAllCaseTransactionsAsync();
         }
 
         [HttpGet]
@@ -49,36 +48,43 @@ namespace FundRaisingServer.Controllers;
         [Route("AddCaseTransaction")]
         public async Task<IActionResult> AddCaseTransaction(AddCaseTransactionRequestDto caseTransaction)
         {
-            await _caseTransactionRepository.AddCaseTransactionAsync(caseTransaction);
-            return Ok(true);
-        }
-
-        [HttpPut]
-        [Route("UpdateCaseTransaction/{id:int}")]
-        public async Task<IActionResult> UpdateCaseTransaction([FromRoute] int id, CaseTransaction caseTransaction)
-        {
-            if (id != caseTransaction.CaseTransactionId)
+            try
             {
-                return BadRequest();
+                await _caseTransactionRepository.AddCaseTransactionAsync(caseTransaction);
+
+
+                return Ok(true);
             }
-
-            await _caseTransactionRepository.UpdateCaseTransactionAsync(caseTransaction);
-
-            return NoContent();
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Failed to add case transaction.");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         [HttpDelete]
         [Route("DeleteCaseTransaction/{id:int}")]
         public async Task<IActionResult> DeleteCaseTransaction([FromRoute] int id)
         {
-            var caseTransaction = await _caseTransactionRepository.GetCaseTransactionByIdAsync(id);
-            if (caseTransaction == null)
+            try
             {
-                return NotFound();
+                var caseTransaction = await _caseTransactionRepository.GetCaseTransactionByIdAsync(id);
+                if (caseTransaction == null)
+                {
+                    return NotFound();
+                }
+
+                await _caseTransactionRepository.DeleteCaseTransactionAsync(id);
+
+
+
+                return NoContent();
             }
-
-            await _caseTransactionRepository.DeleteCaseTransactionAsync(id);
-
-            return NoContent();
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Failed to delete case transaction.");
+                return StatusCode(500, "Internal server error");
+            }
         }
     }
+}
