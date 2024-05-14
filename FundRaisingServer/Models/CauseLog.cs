@@ -19,6 +19,8 @@ public partial class CauseLog
 
     public int UserCnic { get; set; }
 
+    public string Description { get; set; } = null!;
+
     public virtual Cause Cause { get; set; } = null!;
 
     public virtual User UserCnicNavigation { get; set; } = null!;

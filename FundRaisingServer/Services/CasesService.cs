@@ -251,6 +251,21 @@ namespace FundRaisingServer.Services
                 throw;
             }
         }
+
+        public Task AddCaseAsync(CaseLog caseLog)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ActionResult<CaseResponseDto>> CloseCaseAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task ResolveCaseAsync(int caseId, UpdateCaseRequestDto updateCaseRequestDto)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 

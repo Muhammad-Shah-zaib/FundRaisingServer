@@ -15,6 +15,22 @@ public partial class CaseLog
 
     public int UserCnic { get; set; }
 
+    public string Title { get; set; } = null!;
+
+    public string CauseName { get; set; } = null!;
+
+    public decimal RequiredAmount { get; set; }
+
+    public decimal CollectedAmount { get; set; }
+
+    public decimal? RemainingAmount { get; set; }
+
+    public bool VerifiedStatus { get; set; }
+
+    public bool ResolvedStatus { get; set; }
+
+    public string Description { get; set; } = null!;
+
     public virtual Case Case { get; set; } = null!;
 
     public virtual User UserCnicNavigation { get; set; } = null!;

@@ -79,6 +79,18 @@ public partial class FundRaisingDbContext : DbContext
 
             entity.Property(e => e.CaseLogId).HasColumnName("Case_Log_ID");
             entity.Property(e => e.CaseId).HasColumnName("Case_ID");
+            entity.Property(e => e.CauseName)
+                .HasMaxLength(128)
+                .IsUnicode(false)
+                .HasDefaultValue("")
+                .HasColumnName("Cause_Name");
+            entity.Property(e => e.CollectedAmount)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("Collected_Amount");
+            entity.Property(e => e.Description)
+                .HasMaxLength(1028)
+                .IsUnicode(false)
+                .HasDefaultValue("");
             entity.Property(e => e.LogTimestamp)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
@@ -87,9 +99,22 @@ public partial class FundRaisingDbContext : DbContext
                 .HasMaxLength(20)
                 .IsUnicode(false)
                 .HasColumnName("Log_Type");
+            entity.Property(e => e.RemainingAmount)
+                .HasComputedColumnSql("([Required_Amount]-[Collected_Amount])", false)
+                .HasColumnType("decimal(11, 2)")
+                .HasColumnName("Remaining_Amount");
+            entity.Property(e => e.RequiredAmount)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("Required_Amount");
+            entity.Property(e => e.ResolvedStatus).HasColumnName("Resolved_Status");
+            entity.Property(e => e.Title)
+                .HasMaxLength(128)
+                .IsUnicode(false)
+                .HasDefaultValue("SUBMISSION OF HOSTEL DUES");
             entity.Property(e => e.UserCnic)
                 .HasDefaultValue(12)
                 .HasColumnName("User_CNIC");
+            entity.Property(e => e.VerifiedStatus).HasColumnName("Verified_Status");
 
             entity.HasOne(d => d.Case).WithMany(p => p.CaseLogs)
                 .HasForeignKey(d => d.CaseId)
@@ -165,6 +190,10 @@ public partial class FundRaisingDbContext : DbContext
             entity.Property(e => e.CollectedAmount)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("Collected_Amount");
+            entity.Property(e => e.Description)
+                .HasMaxLength(1028)
+                .IsUnicode(false)
+                .HasDefaultValue("");
             entity.Property(e => e.LogTimestamp)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
@@ -255,9 +284,18 @@ public partial class FundRaisingDbContext : DbContext
         {
             entity.HasKey(e => e.UserCnic).HasName("PK__Users__206D91903BFBC3E9");
 
+            entity.HasIndex(e => e.Cms, "UC_CMS").IsUnique();
+
+            entity.HasIndex(e => e.PhoneNo, "UC_PhoneNo").IsUnique();
+
             entity.HasIndex(e => e.Email, "UQ__Users__A9D105345BEACED2").IsUnique();
 
             entity.Property(e => e.UserCnic).HasColumnName("User_CNIC");
+            entity.Property(e => e.Cms)
+                .HasMaxLength(11)
+                .IsUnicode(false)
+                .HasDefaultValue("00000768574")
+                .HasColumnName("CMS");
             entity.Property(e => e.Email)
                 .HasMaxLength(150)
                 .IsUnicode(false);
@@ -269,6 +307,11 @@ public partial class FundRaisingDbContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("Last_Name");
+            entity.Property(e => e.PhoneNo)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasDefaultValue("00000000000")
+                .HasColumnName("Phone_No");
         });
 
         modelBuilder.Entity<UserAuthLog>(entity =>
