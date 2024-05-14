@@ -3,6 +3,7 @@ using FundRaisingServer.Models.DTOs.Case;
 using FundRaisingServer.Models.DTOs.CaseLog;
 using FundRaisingServer.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 
 
@@ -69,18 +70,34 @@ namespace FundRaisingServer.Controllers
 
             await _casesRepo.AddCaseAsync(caseDto);
 
+            // Retrieve the latest case separately after adding it
+            var latestCaseId = await this._context.Cases
+            .OrderByDescending(c => c.CaseId)
+            .Select(c => c.CaseId)
+            .FirstOrDefaultAsync();
+
+
+            // Create a new CaseLog for the latest case
             var newCaseLog = new CaseLog
             {
                 LogType = CaseLogTypeEnum.CREATED_DATE.ToString(),
                 LogTimestamp = DateTime.UtcNow,
-                CaseId = caseDto.CaseId,
-                UserCnic = caseDto.UserCnic
+                CaseId = latestCaseId,
+                CollectedAmount = 0,
+                CauseName = caseDto.CauseName,
+                UserCnic = caseDto.UserCnic,
+                RequiredAmount = caseDto.RequiredDonations,
+                ResolvedStatus = false,
+                Title = caseDto.Title,
+                Description = caseDto.Description,
+                VerifiedStatus = caseDto.VerifiedStatus
             };
 
             await this._context.CaseLogs.AddAsync(newCaseLog);
 
             return Ok();
         }
+
 
         // API endpoint to update case
         [HttpPut]
@@ -118,7 +135,7 @@ namespace FundRaisingServer.Controllers
 
             return Ok();
         }
-        
+
         // API endpoint to verify case
         [HttpPut]
         [Route("VerifyCase/{id}")]
@@ -138,7 +155,7 @@ namespace FundRaisingServer.Controllers
                     Title = updateCaseRequestDto.Title,
                     Description = updateCaseRequestDto.Description
                 };
-            await this._context.CaseLogs.AddAsync(newCaseLog);
+                await this._context.CaseLogs.AddAsync(newCaseLog);
 
 
                 return verifiedCase;
@@ -221,9 +238,9 @@ namespace FundRaisingServer.Controllers
         [Route("CloseCase/{id}")]
         public async Task<IActionResult> CloseCase([FromRoute] int id, [FromBody] UpdateCaseRequestDto updateCaseRequestDto)
         {
-                var caseEntity = await this._context.Cases.FindAsync(id);
+            var caseEntity = await this._context.Cases.FindAsync(id);
             try
-            {                
+            {
 
                 var newCaseLog = new CaseLog()
                 {

@@ -36,7 +36,7 @@ namespace FundRaisingServer.Services
                             {
                                 LogType = l.LogType,
                                 LogDate = l.LogTimestamp.Date.ToString("yyyy-MM-dd"),
-                                LogTime = l.LogTimestamp.TimeOfDay
+                                LogTime = l.LogTimestamp.TimeOfDay,
                             })
                             .ToList()
                     })
@@ -103,30 +103,6 @@ namespace FundRaisingServer.Services
                 // adding the case to the DB
                 await this._context.Cases.AddAsync(newCase);
                 await _context.SaveChangesAsync();
-
-                // Fetch the case from the database to get its unique identifier
-                var caseId = await this._context.Cases
-                    .OrderByDescending(c => c.CaseId)
-                    .Select(c => c.CaseId)
-                    .FirstOrDefaultAsync();
-                
-                // now we need to add the CREATED_DATE log
-                await this._caseLogRepository.AddNewCaseLogAsync(new AddCaseLogRequestDto()
-                {
-                    CaseId = caseId,
-                    LogType = "CREATED_DATE"
-                },
-                new AddCaseToLogRequestDto(){
-                    Title = caseRequestDto.Title,
-                    CauseName = caseRequestDto.CauseName,
-                    RequiredDonations = caseRequestDto.RequiredDonations,
-                    CollectedDonations = 0,
-                    RemainingDonations = caseRequestDto.RequiredDonations,
-                    VerifiedStatus = caseRequestDto.VerifiedStatus,
-                    ResolvedStatus = false,
-                    Description = caseRequestDto.Description
-                });
-                await this._context.SaveChangesAsync();
             }
 
             catch (Exception e)
@@ -145,10 +121,10 @@ namespace FundRaisingServer.Services
                 const string deleteQuery = "DELETE Case_Log WHERE Case_ID = @CaseId";
                 await this._context.Database.ExecuteSqlRawAsync(deleteQuery,
                     new SqlParameter("@CaseId", id));
-                
+
                 // now we can delete the case
                 const string query = "DELETE Cases WHERE Case_ID = @CaseId";
-                
+
                 /* 
                 * executing the query using the Parameterized Query 
                 * for protection against Sql Injection
@@ -178,7 +154,7 @@ namespace FundRaisingServer.Services
                 existingCase.CauseName = caseDto.CauseName;
                 existingCase.VerifiedStatus = caseDto.VerifiedStatus;
                 existingCase.RequiredAmount = caseDto.RequiredDonations;
-                
+
                 // now adding the Updated case Log
                 // await this._caseLogRepository.aDD(new AddCaseLogRequestDto()
                 // {
@@ -246,20 +222,23 @@ namespace FundRaisingServer.Services
         }
 
         // the method to update the collectedAmount of a case in the DB - Call this after transation is made to update the case Colelcted Amount
-        public async Task<CaseResponseDto?> UpdateCaseCollectedAmountAsync(int caseId, decimal amount){
+        public async Task<CaseResponseDto?> UpdateCaseCollectedAmountAsync(int caseId, decimal amount)
+        {
             try
             {
                 var existingCase = await this._context.Cases.FindAsync(caseId);
                 if (existingCase == null) return null;
                 existingCase.CollectedAmount += amount;
                 await this._context.SaveChangesAsync();
-                return new CaseResponseDto(){
+                return new CaseResponseDto()
+                {
                     CaseId = existingCase.CaseId,
                     CollectedDonations = existingCase.CollectedAmount,
                     RemainingDonations = existingCase.RemainingAmount ?? 0,
                     RequiredDonations = existingCase.RequiredAmount
                 };
-            }catch (Exception e)
+            }
+            catch (Exception e)
             {
                 Console.WriteLine(e);
                 throw;
@@ -267,7 +246,7 @@ namespace FundRaisingServer.Services
         }
 
         // this method is used to resolve a case
-        public async Task<bool?> ResolveCaseAsync(int id, UpdateCaseRequestDto updateCaseRequestDto)
+        public async Task<bool?> ResolveCaseAsync(int id, int userCnic)
         {
             try
             {
@@ -277,18 +256,19 @@ namespace FundRaisingServer.Services
                 await _context.SaveChangesAsync();
 
                 // now we need to add the log of this case
-                await this._context.CaseLogs.AddAsync(new CaseLog(){
+                await this._context.CaseLogs.AddAsync(new CaseLog()
+                {
                     CaseId = id,
                     LogType = "RESOLVED_DATE",
                     LogTimestamp = DateTime.UtcNow,
-                    Description = updateCaseRequestDto.Description,
-                    Title = updateCaseRequestDto.Title,
-                    CollectedAmount = updateCaseRequestDto.CollectedDonations,
-                    RequiredAmount = updateCaseRequestDto.RequiredDonations,
-                    VerifiedStatus = updateCaseRequestDto.VerifiedStatus,
+                    Description = existingCase.Description,
+                    Title = existingCase.Title,
+                    CollectedAmount = existingCase.CollectedAmount,
+                    RequiredAmount = existingCase.RequiredAmount,
+                    VerifiedStatus = existingCase.VerifiedStatus,
                     ResolvedStatus = true,
-                    CauseName = updateCaseRequestDto.CauseName,
-                    UserCnic = updateCaseRequestDto.UserCnic
+                    CauseName = existingCase.CauseName,
+                    UserCnic = existingCase.userCnic
                 });
 
                 return true;
@@ -300,5 +280,5 @@ namespace FundRaisingServer.Services
             }
         }
 
-    }   
+    }
 }
