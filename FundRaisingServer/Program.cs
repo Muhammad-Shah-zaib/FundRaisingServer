@@ -32,6 +32,7 @@ builder.Services.AddScoped<ICasesRepository, CasesService>();
 builder.Services.AddScoped<ICaseTransactionRepository, CaseTransactionService>();
 builder.Services.AddScoped<ICaseLogRepository,CaseLogService>();
 builder.Services.AddScoped<ICauseBankService, CauseBankService>();
+builder.Services.AddScoped<ICauseRepository, CauseService>();
 
 // adding the db context
 builder.Services.AddDbContext<FundRaisingDbContext>(options => 

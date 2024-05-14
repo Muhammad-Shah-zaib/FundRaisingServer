@@ -1,51 +1,28 @@
 using Microsoft.AspNetCore.Mvc;
 using FundRaisingServer.Dtos;
 using Microsoft.EntityFrameworkCore;
+using FundRaisingServer.Repositories;
 
 namespace FundRaisingServer.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class CauseController : ControllerBase
+    public class CauseController (FundRaisingDbContext context, ICauseRepository causeRepo) : ControllerBase
     {
-        private readonly FundRaisingDbContext _context;
+        private readonly FundRaisingDbContext _context = context;
+        private readonly ICauseRepository _causeRepo  = causeRepo;
 
-        public CauseController(FundRaisingDbContext context)
-        {
-            _context = context;
-        }
-
+        /*
+        * Below API endpoint add the cause
+        * in the db using cause Repo addCauseAsync method
+        */
         [HttpPost]
         [Route("addCause")]
         public async Task<ActionResult<Cause>> AddCause([FromBody] CauseDto causeDto)
         {
             try
             {
-                var newCause = new Cause
-                {
-                    CauseTitle = causeDto.CauseTitle,
-                    Description = causeDto.Description,
-                    ClosedStatus = false,
-                    CollectedAmount = 0 // Assuming initial collected amount is zero
-                };
-
-                await _context.Causes.AddAsync(newCause);
-                await _context.SaveChangesAsync();
-
-                var latestCause = _context.Causes.OrderByDescending(c => c.CauseId).FirstOrDefault();
-
-                var newCauseLog = new CauseLog
-                {
-                    LogType = "CREATED",
-                    LogTimestamp = DateTime.UtcNow,
-                    CauseTitle = causeDto.CauseTitle,
-                    Description = causeDto.Description,
-                    UserCnic = causeDto.UserCnic,
-                    CauseId = newCause.CauseId
-                };
-
-                _context.CauseLogs.Add(newCauseLog);
-                await _context.SaveChangesAsync();
+                if(!await this._causeRepo.AddCauseAsync(causeDto)) return StatusCode(500, "Internal server error");
 
                 return Ok("Cause added successfully");
             }
@@ -55,7 +32,7 @@ namespace FundRaisingServer.Controllers
             }
         }
 
-        // below method delete the Cause if and only if the Transaction are null for the associated causeId
+        // * below method delete the Cause if and only if the Transaction are null for the associated causeId
         [HttpDelete]
         [Route("DeleteCause/{id:int}")]
         public async Task<ActionResult> DeleteCause([FromRoute] int id)
