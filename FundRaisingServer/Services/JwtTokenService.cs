@@ -45,5 +45,5 @@ public class JwtTokenService(IOptionsMonitor<JwtConfig> optionsMonitor) : IJwtTo
         var jwtToken = jwtTokenHandler.WriteToken(token);
 
         return jwtToken;
-    }
+}
 }

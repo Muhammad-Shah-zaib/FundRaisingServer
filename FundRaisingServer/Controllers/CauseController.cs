@@ -39,6 +39,7 @@ namespace FundRaisingServer.Controllers
                     LogType = "CREATED",
                     LogTimestamp = DateTime.UtcNow,
                     CauseTitle = causeDto.CauseTitle,
+                    Description = causeDto.Description,
                     UserCnic = causeDto.UserCnic,
                     CauseId = newCause.CauseId
                 };
@@ -113,6 +114,7 @@ namespace FundRaisingServer.Controllers
                     LogTimestamp = DateTime.Now,
                     CauseTitle = cause.CauseTitle,
                     UserCnic = causeDto.UserCnic,
+                    Description = causeDto.Description,
                     CauseId = cause.CauseId,
                     CollectedAmount= cause.CollectedAmount
                 };
@@ -149,6 +151,7 @@ namespace FundRaisingServer.Controllers
                     LogTimestamp = DateTime.UtcNow,
                     CauseTitle = causeUpdateDto.Title,
                     UserCnic = causeUpdateDto.UserCnic,
+                    Description = causeUpdateDto.Description,
                     CauseId = id,
                     CollectedAmount = cause.CollectedAmount
                 };
