@@ -24,6 +24,6 @@ namespace FundRaisingServer.Repositories
         Task<CaseResponseDto?> UpdateCaseCollectedAmountAsync(int caseId, decimal amount);
 
 
-        Task<bool?> ResolveCaseAsync(int caseId, UpdateCaseRequestDto updateCaseRequestDto);
+        Task<bool?> ResolveCaseAsync(int caseId, int userCnic);
 }
 }

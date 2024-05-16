@@ -89,7 +89,8 @@ namespace FundRaisingServer.Services
         {
             try
             {
-                var newCase = new Case()
+                // adding the case to the DB
+                await this._context.Cases.AddAsync(new Case()
                 {
                     Title = caseRequestDto.Title,
                     Description = caseRequestDto.Description,
@@ -98,10 +99,7 @@ namespace FundRaisingServer.Services
                     RequiredAmount = caseRequestDto.RequiredDonations,
                     ResolveStatus = false,
                     CollectedAmount = 0 // initially there will be no amount collected
-                };
-
-                // adding the case to the DB
-                await this._context.Cases.AddAsync(newCase);
+                });
                 await _context.SaveChangesAsync();
             }
 
@@ -254,23 +252,6 @@ namespace FundRaisingServer.Services
                 if (existingCase == null) return null;
                 existingCase.ResolveStatus = true;
                 await _context.SaveChangesAsync();
-
-                // now we need to add the log of this case
-                await this._context.CaseLogs.AddAsync(new CaseLog()
-                {
-                    CaseId = id,
-                    LogType = "RESOLVED_DATE",
-                    LogTimestamp = DateTime.UtcNow,
-                    Description = existingCase.Description,
-                    Title = existingCase.Title,
-                    CollectedAmount = existingCase.CollectedAmount,
-                    RequiredAmount = existingCase.RequiredAmount,
-                    VerifiedStatus = existingCase.VerifiedStatus,
-                    ResolvedStatus = true,
-                    CauseName = existingCase.CauseName,
-                    UserCnic = existingCase.userCnic
-                });
-
                 return true;
             }
             catch (Exception e)

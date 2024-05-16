@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 
-
 // THIS CONTROLLER POSSESS FOLLOWING API endpoints
 // GetAllCases - to get all the resolved cases
 // GetCaseById - to get a case by its id
@@ -16,7 +15,6 @@ using Microsoft.EntityFrameworkCore;
 // UnVerifyCase - to un-verify a case
 // ResolveCase - to resolve a case
 // CloseCase - to close a case
-
 
 
 namespace FundRaisingServer.Controllers
@@ -29,14 +27,15 @@ namespace FundRaisingServer.Controllers
         private readonly ILogger<CasesController> _logger;
         private readonly FundRaisingDbContext _context;
 
-        public CasesController(ICasesRepository casesRepo, ILogger<CasesController> logger, FundRaisingDbContext context)
+        public CasesController(ICasesRepository casesRepo, ILogger<CasesController> logger,
+            FundRaisingDbContext context)
         {
             _casesRepo = casesRepo;
             _logger = logger;
             this._context = context;
         }
 
-
+        // API endpoint to get all the cases that are resolved
         [HttpGet]
         [Route("GetAllCases")]
         public async Task<IEnumerable<CaseResponseDto>> GetAllCases()
@@ -44,7 +43,7 @@ namespace FundRaisingServer.Controllers
             return await _casesRepo.GetAllCasesAsync();
         }
 
-        // API endpoint to get all the cases that are not resolved
+        // API endpoint to get a single case by its ID
         [HttpGet]
         [Route("GetCaseById/{id}")]
         public async Task<ActionResult<CaseResponseDto>> GetCaseById([FromRoute] int id)
@@ -52,7 +51,7 @@ namespace FundRaisingServer.Controllers
             var caseResponseDto = await _casesRepo.GetCaseByIdAsync(id);
             if (caseResponseDto == null)
             {
-                return NotFound();
+                return NotFound($"Case with Id: {id} not found.");
             }
 
             return caseResponseDto;
@@ -61,104 +60,110 @@ namespace FundRaisingServer.Controllers
         // API endpoint to add case
         [HttpPost]
         [Route("AddCase")]
-        public async Task<IActionResult> AddCase([FromBody] AddCaseRequestDto caseDto)
+        public async Task<IActionResult> AddCase([FromBody] AddCaseRequestDto addCaseRequestDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            await _casesRepo.AddCaseAsync(caseDto);
+            await _casesRepo.AddCaseAsync(addCaseRequestDto);
 
             // Retrieve the latest case separately after adding it
             var latestCaseId = await this._context.Cases
-            .OrderByDescending(c => c.CaseId)
-            .Select(c => c.CaseId)
-            .FirstOrDefaultAsync();
+                .OrderByDescending(c => c.CaseId)
+                .Select(c => c.CaseId)
+                .FirstOrDefaultAsync();
 
 
             // Create a new CaseLog for the latest case
-            var newCaseLog = new CaseLog
+            await this._context.CaseLogs.AddAsync(new CaseLog
             {
                 LogType = CaseLogTypeEnum.CREATED_DATE.ToString(),
                 LogTimestamp = DateTime.UtcNow,
                 CaseId = latestCaseId,
                 CollectedAmount = 0,
-                CauseName = caseDto.CauseName,
-                UserCnic = caseDto.UserCnic,
-                RequiredAmount = caseDto.RequiredDonations,
+                CauseName = addCaseRequestDto.CauseName,
+                UserCnic = addCaseRequestDto.UserCnic,
+                RequiredAmount = addCaseRequestDto.RequiredDonations,
                 ResolvedStatus = false,
-                Title = caseDto.Title,
-                Description = caseDto.Description,
-                VerifiedStatus = caseDto.VerifiedStatus
-            };
-
-            await this._context.CaseLogs.AddAsync(newCaseLog);
+                Title = addCaseRequestDto.Title,
+                Description = addCaseRequestDto.Description,
+                VerifiedStatus = addCaseRequestDto.VerifiedStatus
+            });
+            await this._context.SaveChangesAsync();
 
             return Ok();
         }
-
-
+        
         // API endpoint to update case
         [HttpPut]
-        [Route("UpdateCase/{id}")]
-        public async Task<IActionResult> UpdateCase([FromRoute] int id, [FromBody] UpdateCaseRequestDto updateCaseRequestDto)
+        [Route("UpdateCase/{id:int}")]
+        public async Task<IActionResult> UpdateCase([FromRoute] int id,
+            [FromBody] UpdateCaseRequestDto updateCaseRequestDto)
         {
+            // checking the model state
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
+            // checking if the case with the given ID exist or not
             var existingCase = await _casesRepo.GetCaseByIdAsync(id);
-            if (existingCase == null)
-            {
-                return NotFound();
-            }
+            if (existingCase == null) return NotFound($"Case, with ID {id}, does not exist");
 
+            // updating the case if it exists
             await _casesRepo.UpdateCaseAsync(id, updateCaseRequestDto);
-
-            var newCaseLog = new CaseLog
+            // now we need to create an update log
+            await this._context.CaseLogs.AddAsync(new CaseLog
             {
-
                 LogType = CaseLogTypeEnum.UPDATED_DATE.ToString(),
                 LogTimestamp = DateTime.UtcNow,
-                CaseId = updateCaseRequestDto.CaseId,
+                CaseId = id,
                 CollectedAmount = updateCaseRequestDto.CollectedDonations,
                 RequiredAmount = updateCaseRequestDto.RequiredDonations,
                 Title = updateCaseRequestDto.Title,
-                Description = updateCaseRequestDto.Description
-
-            };
-            await this._context.CaseLogs.AddAsync(newCaseLog);
-
-
-
+                Description = updateCaseRequestDto.Description,
+                ResolvedStatus = updateCaseRequestDto.ResolvedStatus,
+                VerifiedStatus = updateCaseRequestDto.VerifiedStatus,
+                UserCnic = updateCaseRequestDto.UserCnic,
+                CauseName = updateCaseRequestDto.CauseName
+            });
+            await this._context.SaveChangesAsync();
             return Ok();
         }
 
         // API endpoint to verify case
         [HttpPut]
-        [Route("VerifyCase/{id}")]
-        public async Task<ActionResult<CaseResponseDto>> VerifyCase([FromRoute] int id, [FromBody] UpdateCaseRequestDto updateCaseRequestDto)
+        [Route("VerifyCase/{id:int}")]
+        public async Task<ActionResult<CaseResponseDto>> VerifyCase([FromRoute] int id, [FromBody] int userCnic)
         {
             try
             {
+                // first we will check if the case exists or not
+                var existingCase = await _casesRepo.GetCaseByIdAsync(id);
+                if (existingCase == null) return NotFound($"Case, with ID {id}, not found");
+                if (existingCase.VerifiedStatus) return BadRequest($"Case# {id}, is already verified.");
+                // now we can verify the case
                 var verifiedCase = await _casesRepo.VerifyCaseAsync(id);
 
-                var newCaseLog = new CaseLog
+                // now we need to store the verified log
+                await this._context.CaseLogs.AddAsync(new CaseLog
                 {
                     LogType = CaseLogTypeEnum.VERIFIED_DATE.ToString(),
                     LogTimestamp = DateTime.UtcNow,
-                    CaseId = updateCaseRequestDto.CaseId,
-                    CollectedAmount = updateCaseRequestDto.CollectedDonations,
-                    RequiredAmount = updateCaseRequestDto.RequiredDonations,
-                    Title = updateCaseRequestDto.Title,
-                    Description = updateCaseRequestDto.Description
-                };
-                await this._context.CaseLogs.AddAsync(newCaseLog);
-
-
-                return verifiedCase;
+                    CaseId = existingCase.CaseId,
+                    CollectedAmount = existingCase.CollectedDonations,
+                    RequiredAmount = existingCase.RequiredDonations,
+                    Title = existingCase.Title,
+                    Description = existingCase.Description,
+                    ResolvedStatus = existingCase.ResolvedStatus,
+                    VerifiedStatus = true,
+                    UserCnic = userCnic,
+                    CauseName = existingCase.CauseName
+                });
+                await this._context.SaveChangesAsync();
+                return Ok(verifiedCase);
             }
             catch (Exception ex)
             {
@@ -170,26 +175,33 @@ namespace FundRaisingServer.Controllers
         // API endpoint to un-verify case
         [HttpPut]
         [Route("UnVerifyCase/{id:int}")]
-        public async Task<ActionResult<CaseResponseDto>> UnVerifyCase([FromRoute] int id, [FromBody] UpdateCaseRequestDto updateCaseRequestDto)
+        public async Task<ActionResult<CaseResponseDto>> UnVerifyCase([FromRoute] int id, [FromBody] int userCnic)
         {
             try
             {
+                // first we will check if the case exists or not
+                var existingCase = await _casesRepo.GetCaseByIdAsync(id);
+                if (existingCase == null) return NotFound($"Case, with ID {id}, not found");
+                if (!existingCase.ResolveStatus) return BadRequest($"Case# {id}, is not verified.");
+                // now we can un-verify the case
                 var unverifiedCase = await _casesRepo.UnVerifyCaseAsync(id);
 
-                var newCaseLog = new CaseLog
+                await this._context.CaseLogs.AddAsync(new CaseLog
                 {
                     LogType = CaseLogTypeEnum.UNVERIFIED_DATE.ToString(),
                     LogTimestamp = DateTime.UtcNow,
-                    CaseId = updateCaseRequestDto.CaseId,
-                    CollectedAmount = updateCaseRequestDto.CollectedDonations,
-                    RequiredAmount = updateCaseRequestDto.RequiredDonations,
-                    Title = updateCaseRequestDto.Title,
-                    Description = updateCaseRequestDto.Description
-                };
-                await this._context.CaseLogs.AddAsync(newCaseLog);
-
-
-                return unverifiedCase;
+                    CaseId = existingCase.CaseId,
+                    CollectedAmount = existingCase.CollectedDonations,
+                    RequiredAmount = existingCase.RequiredDonations,
+                    Title = existingCase.Title,
+                    Description = existingCase.Description,
+                    ResolvedStatus = existingCase.ResolvedStatus,
+                    VerifiedStatus = false,
+                    UserCnic = userCnic,
+                    CauseName = existingCase.CauseName
+                });
+                await this._context.SaveChangesAsync();
+                return Ok(unverifiedCase);
             }
             catch (Exception ex)
             {
@@ -201,70 +213,39 @@ namespace FundRaisingServer.Controllers
         // API endpoint to resolve case
         [HttpPut]
         [Route("ResolveCase/{id:int}")]
-        public async Task<IActionResult> ResolveCase([FromRoute] int id, [FromBody] UpdateCaseRequestDto updateCaseRequestDto)
+        public async Task<IActionResult> ResolveCase([FromRoute] int id, [FromBody] int userCnic)
         {
             try
             {
+                // first we will check if the case exists or not
+                var existingCase = await this._context.Cases.FindAsync(id);
+                if (existingCase == null) return NotFound();
+                if (existingCase.ResolveStatus) return BadRequest($"Case {id}, is already resolved");
                 // first we need to resolve the case
-                await _casesRepo.ResolveCaseAsync(id, updateCaseRequestDto);
+                await this._casesRepo.ResolveCaseAsync(id, userCnic);
 
-                // Add a new case log
-                var newCaseLog = new CaseLog
+                // Now we need to add resolved case log
+                await this._context.CaseLogs.AddAsync(new CaseLog
                 {
                     LogType = CaseLogTypeEnum.RESOLVED_DATE.ToString(),
                     LogTimestamp = DateTime.UtcNow,
-                    CaseId = updateCaseRequestDto.CaseId,
-                    CollectedAmount = updateCaseRequestDto.CollectedDonations,
-                    RequiredAmount = updateCaseRequestDto.RequiredDonations,
-                    Title = updateCaseRequestDto.Title,
-                    Description = updateCaseRequestDto.Description,
-                    VerifiedStatus = updateCaseRequestDto.VerifiedStatus,
-                    ResolvedStatus = updateCaseRequestDto.ResolvedStatus
-                };
+                    CaseId = existingCase.CaseId,
+                    CollectedAmount = existingCase.CollectedAmount,
+                    RequiredAmount = existingCase.RequiredAmount,
+                    Title = existingCase.Title,
+                    Description = existingCase.Description,
+                    ResolvedStatus = true,
+                    VerifiedStatus = existingCase.VerifiedStatus,
+                    UserCnic = userCnic,
+                    CauseName = existingCase.CauseName
+                });
+                await this._context.SaveChangesAsync();
 
-                await this._context.CaseLogs.AddAsync(newCaseLog);
-
-                return Ok("case has been resolved :)");
+                return Ok();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to resolve case.");
-                throw;
-            }
-        }
-
-        // API endpoint to close case
-        [HttpPut]
-        [Route("CloseCase/{id}")]
-        public async Task<IActionResult> CloseCase([FromRoute] int id, [FromBody] UpdateCaseRequestDto updateCaseRequestDto)
-        {
-            var caseEntity = await this._context.Cases.FindAsync(id);
-            try
-            {
-
-                var newCaseLog = new CaseLog()
-                {
-                    LogType = CaseLogTypeEnum.CLOSED_DATE.ToString(),
-                    LogTimestamp = DateTime.UtcNow,
-                    CaseId = updateCaseRequestDto.CaseId,
-                    CollectedAmount = updateCaseRequestDto.CollectedDonations,
-                    RequiredAmount = updateCaseRequestDto.RequiredDonations,
-                    Title = updateCaseRequestDto.Title,
-                    Description = updateCaseRequestDto.Description,
-                    VerifiedStatus = updateCaseRequestDto.VerifiedStatus,
-                    ResolvedStatus = updateCaseRequestDto.ResolvedStatus
-                };
-
-                await this._context.CaseLogs.AddAsync(newCaseLog);
-
-
-                return Ok();
-            }
-
-
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to close case.");
                 throw;
             }
         }
