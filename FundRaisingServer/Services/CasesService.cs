@@ -152,13 +152,6 @@ namespace FundRaisingServer.Services
                 existingCase.CauseName = caseDto.CauseName;
                 existingCase.VerifiedStatus = caseDto.VerifiedStatus;
                 existingCase.RequiredAmount = caseDto.RequiredDonations;
-
-                // now adding the Updated case Log
-                // await this._caseLogRepository.aDD(new AddCaseLogRequestDto()
-                // {
-                //     CaseId = id,
-                //     LogType = "UPDATED_DATE"
-                // });
                 await _context.SaveChangesAsync();
             }
             catch (Exception e)

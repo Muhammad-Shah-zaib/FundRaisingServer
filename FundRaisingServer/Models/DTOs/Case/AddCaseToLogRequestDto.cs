@@ -1,6 +1,4 @@
-using FundRaisingServer.Models.DTOs.Case;
-
-namespace FundRaisingServer.Models.DTOs.CaseLog
+namespace FundRaisingServer.Models.DTOs.Case
 {
     public class AddCaseToLogRequestDto: CaseDto
     {
