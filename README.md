@@ -45,7 +45,7 @@ To get started with this project, follow these steps:
    git clone https://github.com/Muhammad-Shah-zaib/FundRaisingServer
    ```
 2. Ensure you have .NET 8.0 SDK installed.
-3. Set up your Microsoft SQL Server instance.
+3. Set up your Microsoft SQL Server instance:
   ```bash
     cd <folder_name>
     dotnet restore
