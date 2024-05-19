@@ -46,13 +46,13 @@ To get started with this project, follow these steps:
    ```
 2. Ensure you have .NET 8.0 SDK installed.
 3. Set up your Microsoft SQL Server instance.
-  Then run he following commands:
-  ```bash
+  Then run the following commands:
+    ```bash
     cd <folder_name>
     dotnet restore
     dotnet ef dbcontext scaffold "<ConnectionString>" <Provider> <Options>
     dotnet run
-  ```
+    ```
 
 ## Contributors
 - [Muhammad Shahzaib](https://github.com/Muhammad-Shah-zaib)
