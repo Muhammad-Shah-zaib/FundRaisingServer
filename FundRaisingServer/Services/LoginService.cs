@@ -22,7 +22,7 @@ public class LoginService(IJwtTokenRepository jwtTokenService, IUserRepository u
             // we need to add the log of last login in the db
             try
             {
-                await this._userAuthLogRepo.SaveUserAuthLogAsync(existingUser.UserCnic, UserEventType.Last_Login);
+                await this._userAuthLogRepo.SaveUserAuthLogAsync(existingUser.UserCnic, UserEventType.Login);
             }
             catch (Exception e)
             {
