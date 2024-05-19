@@ -86,16 +86,5 @@ public class RegistrationController(IUserTypeRepository userTypeService, IUserRe
             Console.WriteLine(e);
             throw;
         }
-
-
-    }
-
-    [HttpGet]
-    [Route("Test")]
-    // This will check and validate the JWT token presence
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public IActionResult Testing()
-    {
-        return Ok("I am working");
     }
 }
