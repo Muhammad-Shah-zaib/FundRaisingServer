@@ -15,6 +15,21 @@ The project follows a clean architecture approach with the following structure:
 - **Utilities**: Includes utilities.
   - **PasswordHashing**: Contains Argon2Hasher class and IArgon2Hasher interface for password hashing, and RandomSaltGenerator class to generate a random salt.
 
+## Features
+
+- **Authentication**: Secure authentication using JWT.
+- **Role-based Authorization**: Currently in progress.
+- **API Endpoints**: For managing cases and causes and users.
+- **Password Hashing**: Uses Argon2 for secure password hashing with random salt generation.
+
+## Technologies Used
+
+- **.NET 8.0.2 SDK**
+- **MS SQL Server**
+- **Entity Framework (Database First Approach)**
+- **JWT for authentication**
+- **Argon2 for password hashing**
+
 ## Work in Progress
 
 - The web API is currently under development.
