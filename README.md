@@ -34,7 +34,7 @@ To get started with this project, follow these steps:
   ```bash
     cd <folder_name>
     dotnet restore
-    dotnet ef dbcontext scaffold "<ConnectionString?" <Provider> <Options>
+    dotnet ef dbcontext scaffold "<ConnectionString>" <Provider> <Options>
     dotnet run
   ```
 
