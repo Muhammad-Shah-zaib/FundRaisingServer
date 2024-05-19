@@ -43,10 +43,3 @@ To get started with this project, follow these steps:
 - [Azka Ahmad](https://github.com/AzkaAhmad754)
 - [Hassam Ali](https://github.com/Hassam-01)
 
-## Contributing
-
-Contributions are welcome! If you'd like to contribute to this project, please follow the standard procedures for pull requests and issues.
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
