@@ -163,30 +163,30 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
     }
 
     /*
-     * The method to update the user
-     * tuple in the DB ...
-     * you also need to update the log
-     * of update... it is not implemented
-     * in this method you can do this 
-     * in controller
+     * The method below just update the
+     * user tuple in the Users table in
+     * DB
+     *
+     * Since the function is designed
+     * for single purpose, so we need
+     * to add the update log in the
+     * controller
      */
     public async Task<bool> UpdateUserAsync(UserUpdateRequestDto userUpdateRequestDto)
     {
-        const string query =
-            "UPDATE Users SET First_Name = @First_Name, Last_Name = @Last_Name, Email = @Email WHERE User_CNIC = @UserCnic";
-
-        // now we will update the user
-        await this._context.Database.ExecuteSqlRawAsync(query,
-            new SqlParameter("@First_Name", userUpdateRequestDto.FirstName),
-            new SqlParameter("@Last_Name", userUpdateRequestDto.LastName),
-            new SqlParameter("@Email", userUpdateRequestDto.Email),
-            new SqlParameter("@UserId", userUpdateRequestDto.UserId));
-
+        var existingUser = await this._context.Users.FindAsync(userUpdateRequestDto.UserId);
+        if (existingUser == null)
+            return false;
+        
+        // since we have the user, so we can now udpte the user
+        existingUser.FirstName = userUpdateRequestDto.FirstName;
+        existingUser.LastName = userUpdateRequestDto.LastName;
+        existingUser.Email = userUpdateRequestDto.Email;
+        existingUser.Cms = userUpdateRequestDto.Cms.ToString();
+        existingUser.PhoneNo = userUpdateRequestDto.PhoneNo;
         // now we need to add a log for updating the user
         await this._context.SaveChangesAsync();
         return true;
-
-
     }
 
     /*

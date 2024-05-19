@@ -60,15 +60,14 @@ public class UserTypeService(FundRaisingDbContext context, IUserRepository userR
         }
     }
 
-    public async Task<bool> UpdateUserTypeByUserCnicAsync(int UserCnic, string userType)
+    public async Task<bool> UpdateUserTypeByUserCnicAsync(int userCnic, string userType)
     {
         try
         {
             // adding the user type from the table
-            const string query = "UPDATE User_Type SET Type = @UserType WHERE User_CNIC = @UserCnic";
-            await this._context.Database.ExecuteSqlRawAsync(query,
-                new SqlParameter("@UserType", userType),
-                new SqlParameter("@UserCnic", UserCnic));
+            var existigUserType = await this._context.UserTypes.Where(t => t.UserCnic == userCnic).FirstOrDefaultAsync();
+            if (existigUserType == null) return false;
+            existigUserType.Type = userType;
             await this._context.SaveChangesAsync();
             return true;
         }
