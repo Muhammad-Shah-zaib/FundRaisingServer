@@ -10,11 +10,11 @@ public interface IUserAuthLogRepository
      * then it update the logs instead of
      * inserting new log
      */
-    Task<bool> SaveUserAuthLogAsync(string email, UserEventType eventTypeEnum);
+    Task<bool> SaveUserAuthLogAsync(int userCnic, UserEventType eventTypeEnum);
 
     /*
     * The method below deletes the userAuthLog
     * tupel, by using the provided UserCnic
     */
-    Task<bool> DeleteUserAuthLogAsync(int UserCnic);
+    Task<bool> DeleteUserAuthLogAsync(int userCnic);
 }

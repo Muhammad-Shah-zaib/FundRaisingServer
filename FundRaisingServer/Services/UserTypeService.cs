@@ -21,14 +21,12 @@ public class UserTypeService(FundRaisingDbContext context, IUserRepository userR
     {
         try
         {
-            // getting the user 
-            var user = await this._userRepo.GetUserByEmailAsync(userTypeDto.Email) ?? throw new Exception("No user find with the provided email");
+            await this._context.UserTypes.AddAsync(new UserType()
+            {
+                UserCnic = userTypeDto.UserCnic,
+                Type = userTypeDto.UserType,
 
-            // saving the user
-            const string query = $"INSERT INTO User_Type VALUES (@UserType, @UserCnic)";
-            await this._context.Database.ExecuteSqlRawAsync(query,
-                new SqlParameter("@UserType", userTypeDto.UserType),
-                new SqlParameter("@UserCnic", user.UserCnic));
+            });
             await this._context.SaveChangesAsync();
             return true;
         }

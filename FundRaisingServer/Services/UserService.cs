@@ -22,11 +22,14 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
     {
         try
         {
-            const string query = "INSERT INTO Users VALUES (@FirstName, @LastName, @Email)";
-            await this._context.Database.ExecuteSqlRawAsync(query,
-                new SqlParameter("@FirstName", user.FirstName),
-                new SqlParameter("@LastName", user.LastName),
-                new SqlParameter("@Email", user.Email));
+            await this._context.Users.AddAsync(new User()
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Cms = user.Cms.ToString(),
+                PhoneNo = user.PhoneNo
+            });
             await this._context.SaveChangesAsync();
 
             return true;
@@ -36,7 +39,6 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
             Console.WriteLine(e);
             return false;
         }
-
     }
 
     // this method will save the password in the database
@@ -57,10 +59,12 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
             var hashedPassword = this._argon2Hasher.HashPassword(password: password, salt: salt);
 
             // saving User Password
-            var query = "INSERT INTO dbo.Passwords " +
-                        "VALUES " +
-                        $"('{Convert.ToBase64String(hashedPassword)}', '{Convert.ToBase64String(salt)}', {user.UserCnic});";
-            await this._context.Database.ExecuteSqlRawAsync(query);
+            await this._context.Passwords.AddAsync(new Password()
+            {
+                HashedPassword = Convert.ToBase64String(hashedPassword),
+                HashKey = Convert.ToBase64String(salt),
+                UserCnic = user.UserCnic
+            });
             await this._context.SaveChangesAsync();
 
             return true;
@@ -141,6 +145,8 @@ public class UserService(FundRaisingDbContext context, IArgon2Hasher argon2Hashe
                 FirstName = u.FirstName!,
                 LastName = u.LastName!,
                 Email = u.Email,
+                PhoneNo = u.PhoneNo,
+                Cms = int.Parse(u.Cms),
                 UserType = u.UserTypes.Where(ut => ut.UserCnic == u.UserCnic).Select(ut => ut.Type).SingleOrDefault() ?? null!,
                 UserAuthLogsList = u.UserAuthLogs
                     .Where(l => l.UserCnic == u.UserCnic)

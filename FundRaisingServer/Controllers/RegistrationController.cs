@@ -32,15 +32,17 @@ public class RegistrationController(IUserTypeRepository userTypeService, IUserRe
             // checking if the Email already exists or not
             if ((await this._userRepo.GetUserByEmailAsync(registrationRequestDto.Email)) != null)
                 return StatusCode(409, "Email Already Exists");
-
+            // we need to get the user so that we can get its CNIC
             // saving User
             if (!(await this._userRepo.SaveUserAsync(registrationRequestDto)))
             {
                 return StatusCode(500, "Failed to save User");
             }
 
+            var createdUser = await this._userRepo.GetUserByEmailAsync(registrationRequestDto.Email);
+
             // saving password of the user
-            if (!(await this._passwordRepo.SaveUserPasswordAsync(registrationRequestDto.Email,
+            if (!(await this._passwordRepo.SaveUserPasswordAsync(createdUser!.UserCnic,
                     registrationRequestDto.Password)))
             {
                 await this._userRepo.DeleteUserByEmailAsync(registrationRequestDto.Email);
@@ -49,7 +51,7 @@ public class RegistrationController(IUserTypeRepository userTypeService, IUserRe
 
 
             // Saving Logs
-            if (!(await this._userAuthLogRepo.SaveUserAuthLogAsync(registrationRequestDto.Email,
+            if (!(await this._userAuthLogRepo.SaveUserAuthLogAsync(createdUser!.UserCnic,
                     UserEventType.Registration)))
             {
                 await this._passwordRepo.DeleteUserPasswordByEmailAsync(registrationRequestDto.Email);
@@ -61,7 +63,7 @@ public class RegistrationController(IUserTypeRepository userTypeService, IUserRe
             if (!await this._userTypeService.SaveUserTypeAsync(new UserTypeDto()
             {
                 UserType = registrationRequestDto.UserType,
-                Email = registrationRequestDto.Email
+                UserCnic = createdUser!.UserCnic
             }))
             {
                 await this._passwordRepo.DeleteUserPasswordByEmailAsync(registrationRequestDto.Email);
@@ -87,7 +89,6 @@ public class RegistrationController(IUserTypeRepository userTypeService, IUserRe
 
 
     }
-
 
     [HttpGet]
     [Route("Test")]

@@ -16,32 +16,22 @@ public class PasswordService(FundRaisingDbContext context, IUserRepository userR
 
 
     // saving the password of the user
-    /*
-     * Since the Passwords have the User_ID as foreign key so we need
-     * to get the user from the db hence we will get it by using Email
-     * and we need userRepository DI for this. 
-     */
-    public async Task<bool> SaveUserPasswordAsync(string email, string inputPassword)
+    public async Task<bool> SaveUserPasswordAsync(int userCnic, string inputPassword)
     {
         try
         {
-            // finding the user via Email
-            var user = await this._userRepo.GetUserByEmailAsync(email);
-
-            // Extra check if the user exist or not
-            if (user == null) return false;
-
             // Hashing the password
             var password = Encoding.UTF8.GetBytes(inputPassword);
             var salt = Encoding.UTF8.GetBytes(RandomSaltGenerator.GenerateSalt(512 / 8));
             var hashedPassword = this._argon2Hasher.HashPassword(password: password, salt: salt);
 
             // saving User Password
-            const string query = "INSERT INTO dbo.Passwords VALUES (@HashedPassword, @Salt, @UserCnic);";
-            await this._context.Database.ExecuteSqlRawAsync(query,
-                new SqlParameter("@HashedPassword", Convert.ToBase64String(hashedPassword)),
-                new SqlParameter("@Salt", Convert.ToBase64String(salt)),
-                new SqlParameter("@UserCnic", user.UserCnic));
+            await this._context.Passwords.AddAsync(new Password()
+            {
+                HashedPassword = Convert.ToBase64String(hashedPassword),
+                HashKey = Convert.ToBase64String(salt),
+                UserCnic = userCnic
+            });
             await this._context.SaveChangesAsync();
 
             return true;
@@ -49,7 +39,7 @@ public class PasswordService(FundRaisingDbContext context, IUserRepository userR
         catch (Exception e)
         {
             Console.WriteLine(e);
-            return false;
+            throw;
         }
     }
 

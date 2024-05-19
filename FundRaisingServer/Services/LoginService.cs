@@ -14,13 +14,15 @@ public class LoginService(IJwtTokenRepository jwtTokenService, IUserRepository u
     {
         try
         {
+            var existingUser = await this._userService.GetUserByEmailAsync(request.Email);
+            if (existingUser == null) return null;
             // validating the user
             if (!await this._userService.CheckUserAsync(request.Email, request.Password)) return null;
 
             // we need to add the log of last login in the db
             try
             {
-                await this._userAuthLogRepo.SaveUserAuthLogAsync(request.Email, UserEventType.Last_Login);
+                await this._userAuthLogRepo.SaveUserAuthLogAsync(existingUser.UserCnic, UserEventType.Last_Login);
             }
             catch (Exception e)
             {

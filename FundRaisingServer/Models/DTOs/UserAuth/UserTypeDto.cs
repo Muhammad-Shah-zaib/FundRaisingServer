@@ -4,8 +4,6 @@ namespace FundRaisingServer.Models.DTOs.UserAuth;
 
 public class UserTypeDto
 {
-    [Required] 
-    public string Email { get; set; } = string.Empty;
-    [Required] 
-    public string UserType { get; set; } = string.Empty;
+    [Required] public int UserCnic { get; set; }
+    [Required] public string UserType { get; set; } = string.Empty;
 }

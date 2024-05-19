@@ -13,5 +13,7 @@ public class UserResponseDto
     public string Email { get; set; } = string.Empty;
     public string UserType { get; set; } = string.Empty;
     public IEnumerable<UserAuthLogsResponseDto>? UserAuthLogsList { get; set; }
+    public string PhoneNo { get; set; } = string.Empty;
+    public int Cms { get; set; }
 }
 

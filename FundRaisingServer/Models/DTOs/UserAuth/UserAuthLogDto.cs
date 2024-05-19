@@ -5,13 +5,13 @@ namespace FundRaisingServer.Models.DTOs.UserAuth;
 
 public enum UserEventType
 {
-    [Display(Name = "Registration")]
+    [Display(Name = "REGISTRATION")]
     Registration,
     
-    [Display(Name = "Last_Login")]
+    [Display(Name = "LOGIN")]
     Last_Login,
     
-    [Display(Name = "Last_Updated")]
+    [Display(Name = "UPDATED")]
     Last_Update
 }
 
