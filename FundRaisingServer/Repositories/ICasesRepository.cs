@@ -5,11 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace FundRaisingServer.Repositories
-{
-        public interface ICasesRepository
+namespace FundRaisingServer.Repositories;
+
+public interface ICasesRepository
 {
         Task<IEnumerable<CaseResponseDto>> GetAllCasesAsync();
+
+        Task<IEnumerable<CaseResponseDto>> GetAllVerifiedCasesAsync();
 
         Task<CaseResponseDto?> GetCaseByIdAsync(int id);
 
@@ -23,7 +25,6 @@ namespace FundRaisingServer.Repositories
 
         Task<CaseResponseDto?> UpdateCaseCollectedAmountAsync(int caseId, decimal amount);
 
-
         Task<bool?> ResolveCaseAsync(int caseId, int userCnic);
 }
-}
+

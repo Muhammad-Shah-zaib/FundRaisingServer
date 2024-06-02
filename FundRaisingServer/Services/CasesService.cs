@@ -1,17 +1,55 @@
 using FundRaisingServer.Models.DTOs;
 using FundRaisingServer.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using FundRaisingServer.Models.DTOs.CaseLog;
 using FundRaisingServer.Models.DTOs.Case;
 
 namespace FundRaisingServer.Services
 {
-    public class CasesService(FundRaisingDbContext context, ICaseLogRepository caseLogRepository) : ICasesRepository
+    public class CasesService(FundRaisingDbContext context) : ICasesRepository
     {
         private readonly FundRaisingDbContext _context = context;
-        private readonly ICaseLogRepository _caseLogRepository = caseLogRepository;
+
+        public async Task<IEnumerable<CaseResponseDto>> GetAllVerifiedCasesAsync(){
+            try
+            {
+                var cases = await this._context.Cases
+                    .Where(c => !c.ResolveStatus)
+                    .Where(c => c.VerifiedStatus)
+                    .Include(c => c.CaseLogs)
+                    .Select(c => new CaseResponseDto()
+                    {
+                        CaseId = c.CaseId,
+                        Title = c.Title,
+                        Description = c.Description,
+                        VerifiedStatus = c.VerifiedStatus,
+                        CauseName = c.CauseName ?? string.Empty,
+                        CollectedDonations = c.CollectedAmount,
+                        RequiredDonations = c.RequiredAmount,
+                        RemainingDonations = c.RemainingAmount ?? 0,
+                        CaseLogs = c.CaseLogs
+                            .Where(l => l.CaseId == c.CaseId)
+                            .Where(l => l.LogType == "Created")
+                            .Select(l => new CaseLogDto()
+                            {
+                                LogType = l.LogType,
+                                LogDate = l.LogTimestamp.Date.ToString("yyyy-MM-dd"),
+                                LogTime = l.LogTimestamp.TimeOfDay,
+                            })
+                            .ToList()
+                    })
+                    .OrderBy(c => c.CaseId)
+                    .OrderByDescending(c => c.VerifiedStatus)
+                    .ToListAsync();
+                return cases;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
 
         // the method to get all the cases from the DB
         public async Task<IEnumerable<CaseResponseDto>> GetAllCasesAsync()

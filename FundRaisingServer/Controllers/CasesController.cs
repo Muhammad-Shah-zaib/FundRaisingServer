@@ -42,7 +42,30 @@ namespace FundRaisingServer.Controllers
         [Route("GetAllCases")]
         public async Task<IEnumerable<CaseResponseDto>> GetAllCases()
         {
-            return await _casesRepo.GetAllCasesAsync();
+            try
+            {
+                return await _casesRepo.GetAllCasesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get all cases.");
+                throw;
+            }
+        }
+
+        [HttpGet]
+        [Route("GetAllVerifiedCases")]
+        public async Task<IEnumerable<CaseResponseDto>> GetAllVerifiedCases()
+        {
+            try
+            {
+                return await _casesRepo.GetAllVerifiedCasesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get all veeqwrified cases.");
+                throw;
+            }
         }
 
         // API endpoint to get a single case by its ID
