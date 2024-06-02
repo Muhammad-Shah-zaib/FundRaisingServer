@@ -9,6 +9,7 @@ namespace FundRaisingServer.Repositories;
 
 public interface ICasesRepository
 {
+        Task<Int32> GetResolvedCaseCountAsync();
         Task<IEnumerable<CaseResponseDto>> GetAllCasesAsync();
 
         Task<IEnumerable<CaseResponseDto>> GetAllVerifiedCasesAsync();

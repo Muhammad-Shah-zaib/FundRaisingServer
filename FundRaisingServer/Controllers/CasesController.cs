@@ -37,6 +37,21 @@ namespace FundRaisingServer.Controllers
             this._caseLogRepo = caseLogRepo;
         }
 
+        [HttpGet]
+        [Route("GetResolvedCaseCount")]
+        public async Task<ActionResult<Int32>> GetResolvedCaseCount()
+        {
+            try
+            {
+                return Ok(await _casesRepo.GetResolvedCaseCountAsync());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get resolved case count.");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
         // API endpoint to get all the cases that are resolved
         [HttpGet]
         [Route("GetAllCases")]

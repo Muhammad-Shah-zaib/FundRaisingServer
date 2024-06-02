@@ -11,6 +11,20 @@ namespace FundRaisingServer.Services
     {
         private readonly FundRaisingDbContext _context = context;
 
+        public async Task<Int32> GetResolvedCaseCountAsync()
+        {
+            try
+            {
+                return await this._context.Cases
+                    .Where(c => c.ResolveStatus == true)
+                    .CountAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                throw;
+            }
+        }
         public async Task<IEnumerable<CaseResponseDto>> GetAllVerifiedCasesAsync(){
             try
             {
