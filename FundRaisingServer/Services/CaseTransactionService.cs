@@ -2,7 +2,6 @@ using FundRaisingServer.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
 using FundRaisingServer.Models.DTOs.CaseTransactions;
-using FundRaisingServer.Models.DTOs;
 using FundRaisingServer.Models.DTOs.CaseLog;
 
 namespace FundRaisingServer.Services
@@ -18,15 +17,30 @@ namespace FundRaisingServer.Services
             _caseRepo = casesRepo;
         }
 
+        public async Task<decimal> GetTotalDonationsAsync()
+        {
+            try
+            {
+                return await this._context.CaseTransactions
+                    .SumAsync(ct => ct.TransactionAmount);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                throw;
+            }
+        }
+
         // Retrieve all case transactions from the database
         public async Task<IEnumerable<CaseTransactionResponseDto>> GetAllCaseTransactionsAsync()
         {
             try
             {
-                return await _context.CaseTransactions
+                return await this._context.CaseTransactions
                     .Include(ct => ct.Case)
                     .Include(ct => ct.DonorCnicNavigation)
-                    .Select(ct => new CaseTransactionResponseDto(){
+                    .Select(ct => new CaseTransactionResponseDto()
+                    {
                         // transaction information
                         CaseTransactionId = ct.CaseTransactionId,
                         TransactionAmount = ct.TransactionAmount,
@@ -56,9 +70,9 @@ namespace FundRaisingServer.Services
         {
             try
             {
-                var caseTransaction = await _context.CaseTransactions.FindAsync(id);
+                var caseTransaction = await this._context.CaseTransactions.FindAsync(id);
                 if (caseTransaction == null) return null;
-                
+
                 return caseTransaction;
             }
             catch (Exception e)
@@ -73,7 +87,8 @@ namespace FundRaisingServer.Services
         {
             try
             {
-                await this._context.CaseTransactions.AddAsync(new CaseTransaction(){
+                await this._context.CaseTransactions.AddAsync(new CaseTransaction()
+                {
                     CaseId = caseTransaction.CaseId,
                     DonorCnic = caseTransaction.DonorCnic,
                     TransactionAmount = caseTransaction.TransactionAmount,

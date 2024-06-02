@@ -16,7 +16,21 @@ namespace FundRaisingServer.Controllers
             _caseTransactionRepository = caseTransactionRepository;
             _logger = logger;
         }
-
+        [HttpGet]
+        [Route("GetTotalDonations")]
+        public async Task<ActionResult<decimal>> GetTotalDonations()
+        {
+            try
+            {
+                return Ok(await _caseTransactionRepository.GetTotalDonationsAsync());
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Failed to get total donations.");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+        
         [HttpGet]
         [Route("GetAllCaseTransactions")]
         public async Task<ActionResult<IEnumerable<CaseTransactionResponseDto>>> GetAllCaseTransactions()
