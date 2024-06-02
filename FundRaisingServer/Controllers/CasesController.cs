@@ -89,12 +89,14 @@ namespace FundRaisingServer.Controllers
         public async Task<ActionResult<CaseResponseDto>> GetCaseById([FromRoute] int id)
         {
             var caseResponseDto = await _casesRepo.GetCaseByIdAsync(id);
-            if (caseResponseDto == null)
-            {
-                return NotFound($"Case with Id: {id} not found.");
-            }
 
-            return caseResponseDto;
+            return caseResponseDto switch
+            {
+                null => NotFound($"Case with Id: {id} not found."),
+                { ResolvedStatus: true } => BadRequest($"Case with Id: {id} is already resolved."),
+                { VerifiedStatus: false } => BadRequest($"Case with Id: {id} is not verified."),
+                _ => Ok(caseResponseDto)
+            };
         }
 
         // API endpoint to add case
@@ -113,13 +115,13 @@ namespace FundRaisingServer.Controllers
             var latestCase = await this._context.Cases
                 .OrderByDescending(c => c.CaseId)
                 .FirstOrDefaultAsync();
-            
+
             await this._caseLogRepo.AddCaseLogAsync(existingCase: latestCase!, logType: CaseLogTypeEnum.CREATED_DATE,
                 userCnic: addCaseRequestDto.UserCnic);
 
             return Ok("Case added successfully");
         }
-        
+
         // API endpoint to update case
         [HttpPut]
         [Route("UpdateCase/{id:int}")]
@@ -163,7 +165,7 @@ namespace FundRaisingServer.Controllers
                 // now we need to store the verified log
                 await this._caseLogRepo.AddCaseLogAsync(existingCase: existingCase, logType: CaseLogTypeEnum.VERIFIED_DATE,
                     userCnic: caseCnicDto.UserCnic);
-                
+
                 return Ok($"Case# {id} has been verified successfully");
             }
             catch (Exception ex)
