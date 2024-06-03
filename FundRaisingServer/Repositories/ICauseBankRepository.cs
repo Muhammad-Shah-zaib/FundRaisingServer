@@ -20,6 +20,19 @@ public interface ICauseBankService
      */
     Task<IEnumerable<CauseResponseDto>> GetAllCausesAsync();
 
+    /*
+     * The following method get the
+     * total donations from the cause
+     * table and return that as a
+     * DonationSoFarResponse
+     */
     Task<DonationSoFarResponse> GetDonationsSoFarAsync();
+
+    /*
+     * The following method get the
+     * cause by id from the cause table
+     * and return that as a CauseResponseDto
+    */
+    Task<CauseResponseDto?> GetCauseByIdAsync(int id);
 
 }

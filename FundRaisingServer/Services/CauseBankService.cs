@@ -49,7 +49,8 @@ public class CauseBankService (FundRaisingDbContext context): ICauseBankService 
         
     }
 
-    public async Task<DonationSoFarResponse> GetDonationsSoFarAsync(){
+    public async Task<DonationSoFarResponse> GetDonationsSoFarAsync()
+    {
         try
         {
             var totalDonations =  await this._context.Causes
@@ -64,6 +65,26 @@ public class CauseBankService (FundRaisingDbContext context): ICauseBankService 
             throw;
         }
 
+    }
+
+    public async Task<CauseResponseDto?> GetCauseByIdAsync(int id)
+    {
+        try
+        {
+            var cause = await this._context.Causes.FindAsync(id);
+            if (cause == null) return null;
+            return new CauseResponseDto()
+            {
+                CauseId = cause.CauseId,
+                CauseDescription = cause.Description ?? string.Empty,
+                CauseTitle = cause.CauseTitle,
+                CollectedDonation = cause.CollectedAmount
+            };
+        }catch(Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
 }

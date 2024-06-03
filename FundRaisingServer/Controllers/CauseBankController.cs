@@ -6,7 +6,8 @@ namespace FundRaisingServer.Controllers;
 
 [ApiController]
 [Route("/[controller]")]
-public class CauseBankController(ICauseBankService causeBankService): ControllerBase{
+public class CauseBankController(ICauseBankService causeBankService) : ControllerBase
+{
     private readonly ICauseBankService _causeBankService = causeBankService;
 
     [HttpGet]
@@ -17,7 +18,7 @@ public class CauseBankController(ICauseBankService causeBankService): Controller
         return Ok(bankAmount);
     }
 
-    [HttpGet]   
+    [HttpGet]
     [Route("GetAllCauses")]
     public async Task<ActionResult<IEnumerable<CauseResponseDto>>> GetAllCauses()
     {
@@ -29,5 +30,23 @@ public class CauseBankController(ICauseBankService causeBankService): Controller
     public async Task<ActionResult<DonationSoFarResponse>> GetDonationsSoFar()
     {
         return Ok(await this._causeBankService.GetDonationsSoFarAsync());
+    }
+
+    [HttpGet]
+    [Route("GetCauseById/{id:int}")]
+    public async Task<ActionResult<CauseResponseDto>> GetCauseById([FromRoute] int id)
+    {
+        try
+        {
+            var cause = await _causeBankService.GetCauseByIdAsync(id);
+            if (cause == null) return NotFound();
+            return Ok(cause);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return StatusCode(500, $"Internal server error: {e.Message}");
+        }
+
     }
 }
